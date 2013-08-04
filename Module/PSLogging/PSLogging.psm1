@@ -10,10 +10,10 @@ try {
 
 # Attach the interceptor
 
-$flags = [System.Reflection.BindingFlags]::Instance -bor [System.Reflection.BindingFlags]::NonPublic
+$flags = [System.Reflection.BindingFlags]([System.Reflection.BindingFlags]::Instance -bor [System.Reflection.BindingFlags]::NonPublic)
 
 $uiRef = $Host.GetType().GetField('internalUIRef', $flags).GetValue($Host)
-$ui = $uiRef.GetType().GetProperty('Value', $flags).GetValue($uiRef)
+$ui = $uiRef.GetType().GetProperty('Value', $flags).GetValue($uiRef, $null)
 
 $externalUIField = $ui.GetType().GetField('externalUI', $flags)
 $originalUI = $externalUIField.GetValue($ui)
