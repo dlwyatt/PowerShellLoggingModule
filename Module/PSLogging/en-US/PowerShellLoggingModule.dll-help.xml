@@ -192,7 +192,7 @@ While not required, it is recommended that the OnError script block disable this
 	<!--This is the Description section-->
 		<maml:para>This cmdlet creates a new ScriptBlockOutputSubscriber object and attaches it to the current session&apos;s host interceptor.  Every time a line is written to the console via the Output, Error, Warning, Verbose or Debug streams, the corresponding script block is called.  The script block will be sent a single string argument containing the line to be written (including the trailing &quot;`r`n&quot; characters).
 
-This is a generic implementation of the HostIOInterceptor / HostIOSubscriber classes that allows script writers to develop their own logging logic rather than using the included PSLogFile class.</maml:para>
+This is a generic implementation of the HostIoInterceptor / HostIoSubscriber classes that allows script writers to develop their own logging logic rather than using the included PSLogFile class.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>

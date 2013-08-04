@@ -5,7 +5,7 @@ SHORT DESCRIPTION
     Provides background information about the PSLogging module.
     
 LONG DESCRIPTION
-    This topic provides information about the PSLogging.IHostIOSubscriber
+    This topic provides information about the PSLogging.IHostIoSubscriber
     interface, the PSLogging.LogFile and PSLogging.ScriptBlockOutputSubscriber
     classes that implement it, and the Windows PowerShell cmdlets used to
     manage objects of these types.
@@ -27,21 +27,21 @@ LONG DESCRIPTION
       module with similar (though less complete) functionality available at
       http://gallery.technet.microsoft.com/scriptcenter/Write-timestamped-output-4ff1565f
     
-  PSLogging.HostIOInterceptor and PSLogging.IHostIOSubscriber
-      The heart of this module is the HostIOInterceptor class, which is a subclass
+  PSLogging.HostIoInterceptor and PSLogging.IHostIoSubscriber
+      The heart of this module is the HostIoInterceptor class, which is a subclass
       of Microsoft's System.Management.Automation.Host.PSHostUserInterface class
       and acts as a middle man between the InternalHostUserInterface class and its
       externalUI field.  Every time the PowerShell host sends text output to the
       console or ISE output window, it does so via calls to the externalUI field.
       
       This module replaces the externalUI field with an instace of the
-      HostIOInterceptor object.  HostIOInterceptor passes calls on to the original
+      HostIoInterceptor object.  HostIoInterceptor passes calls on to the original
       externalUI object, and also to any number of objects implementing the
-      PSLogging.IHostIOSubscriber interface, with one minor difference: when passing
+      PSLogging.IHostIoSubscriber interface, with one minor difference: when passing
       output to the subscribers, it is broken up into lines, and the strings sent
       to the subscriber include the trailing carriage return/newline characters.
       
-      The module provides two classes that implement IHostIOSubscriber out of the
+      The module provides two classes that implement IHostIoSubscriber out of the
       box: PSLogging.LogFile and PSLogging.ScriptBlockOutputSubscriber.  Both of
       these classes focus only on host Output (Output, Error, Warning, Verbose and
       Debug streams).  The LogFile class has certain hard-coded behavior that I

@@ -1,4 +1,4 @@
-# Cmdlets and associated data types are defined in PowerShellLoggingModule.dll.  This script file just handles attaching and detaching the HostIOInterceptor object.
+# Cmdlets and associated data types are defined in PowerShellLoggingModule.dll.  This script file just handles attaching and detaching the HostIoInterceptor object.
 
 $dllPath = Join-Path -Path $MyInvocation.MyCommand.ScriptBlock.Module.ModuleBase -ChildPath PowerShellLoggingModule.dll
 
@@ -20,10 +20,10 @@ try {
     
     $originalUI = $externalUIField.GetValue($ui)
     
-    $HostIOInterceptor = [PSLogging.HostIOInterceptor]::GetInterceptor()
-    $HostIOInterceptor.HostUI = $originalUI
+    $HostIoInterceptor = [PSLogging.HostIoInterceptor]::GetInterceptor()
+    $HostIoInterceptor.HostUI = $originalUI
 
-    $externalUIField.SetValue($ui, $HostIOInterceptor)
+    $externalUIField.SetValue($ui, $HostIoInterceptor)
     
     # Detach the interceptor when the module is removed.
     $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
