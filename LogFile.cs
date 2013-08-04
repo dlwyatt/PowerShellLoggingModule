@@ -1,12 +1,10 @@
 ﻿namespace PSLogging
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Management.Automation;
-    using System.Management.Automation.Host;
 
-    public class LogFile : HostIOSubscriberBase
+    public class LogFile : HostIoSubscriberBase
     {
         #region Constants
 
@@ -16,8 +14,8 @@
 
         #region Fields
 
-        private string _fileName;
-        private string _path;
+        private readonly string _fileName;
+        private readonly string _path;
 
         #endregion
 
@@ -48,7 +46,7 @@
         }
 
         public LogFile(string filename)
-            : this(filename, StreamType.All, (ScriptBlock)null)
+            : this(filename, StreamType.All, null)
         {
         }
 
@@ -58,7 +56,7 @@
         }
 
         public LogFile(string filename, StreamType streams)
-            : this(filename, streams, (ScriptBlock)null)
+            : this(filename, streams, null)
         {
         }
 
@@ -106,9 +104,9 @@
                 {
                     if (ErrorCallback != null)
                     {
-                        HostIOInterceptor.GetInterceptor().Paused = true;
+                        HostIoInterceptor.GetInterceptor().Paused = true;
                         ErrorCallback.Invoke(new object[] { this, e });
-                        HostIOInterceptor.GetInterceptor().Paused = false;
+                        HostIoInterceptor.GetInterceptor().Paused = false;
                     }
                 }
             }
@@ -134,9 +132,9 @@
                 {
                     if (ErrorCallback != null)
                     {
-                        HostIOInterceptor.GetInterceptor().Paused = true;
+                        HostIoInterceptor.GetInterceptor().Paused = true;
                         ErrorCallback.Invoke(new object[] { this, e });
-                        HostIOInterceptor.GetInterceptor().Paused = false;
+                        HostIoInterceptor.GetInterceptor().Paused = false;
                     }
                 }
             }
@@ -162,9 +160,9 @@
                 {
                     if (ErrorCallback != null)
                     {
-                        HostIOInterceptor.GetInterceptor().Paused = true;
+                        HostIoInterceptor.GetInterceptor().Paused = true;
                         ErrorCallback.Invoke(new object[] { this, e });
-                        HostIOInterceptor.GetInterceptor().Paused = false;
+                        HostIoInterceptor.GetInterceptor().Paused = false;
                     }
                 }
             }
@@ -190,9 +188,9 @@
                 {
                     if (ErrorCallback != null)
                     {
-                        HostIOInterceptor.GetInterceptor().Paused = true;
+                        HostIoInterceptor.GetInterceptor().Paused = true;
                         ErrorCallback.Invoke(new object[] { this, e });
-                        HostIOInterceptor.GetInterceptor().Paused = false;
+                        HostIoInterceptor.GetInterceptor().Paused = false;
                     }
                 }
             }
@@ -219,9 +217,9 @@
                 {
                     if (ErrorCallback != null)
                     {
-                        HostIOInterceptor.GetInterceptor().Paused = true;
+                        HostIoInterceptor.GetInterceptor().Paused = true;
                         ErrorCallback.Invoke(new object[] { this, e });
-                        HostIOInterceptor.GetInterceptor().Paused = false;
+                        HostIoInterceptor.GetInterceptor().Paused = false;
                     }
                 }
             }
@@ -249,10 +247,11 @@
                     {
                         try
                         {
-                            HostIOInterceptor.GetInterceptor().Paused = true;
+                            HostIoInterceptor.GetInterceptor().Paused = true;
                             ErrorCallback.Invoke(new object[] { this, e });
-                            HostIOInterceptor.GetInterceptor().Paused = false;
+                            HostIoInterceptor.GetInterceptor().Paused = false;
                         }
+                        // ReSharper disable once EmptyGeneralCatchClause
                         catch { }
                     }
                 }

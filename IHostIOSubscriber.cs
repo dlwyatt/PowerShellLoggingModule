@@ -7,7 +7,7 @@
     /// <summary>
     /// The Logger interface.
     /// </summary>
-    public interface IHostIOSubscriber
+    public interface IHostIoSubscriber
     {
         #region Public Methods and Operators
 

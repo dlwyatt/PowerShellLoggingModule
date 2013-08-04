@@ -2,7 +2,7 @@
 
 namespace PSLogging
 {
-    [Flags()]
+    [Flags]
     public enum StreamType
     {
         None = 0,

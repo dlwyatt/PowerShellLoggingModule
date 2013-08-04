@@ -42,7 +42,7 @@
   <ItemGroup>
     <Compile Include="Common.cs" />
     <Compile Include="IHostIOSubscriber.cs" />
-    <Compile Include="Cmdlets.cs" />
+    <Compile Include="Commands\Cmdlets.cs" />
     <Compile Include="LogFile.cs" />
     <Compile Include="HostIOInterceptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

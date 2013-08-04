@@ -8,19 +8,19 @@
     using System.Security;
     using System.Text;
 
-    public class HostIOInterceptor : PSHostUserInterface
+    public class HostIoInterceptor : PSHostUserInterface
     {
         #region Static Fields
 
-        private static HostIOInterceptor _instance = new HostIOInterceptor();
+        private readonly static HostIoInterceptor Instance = new HostIoInterceptor();
 
         #endregion
 
         #region Static Methods
 
-        public static HostIOInterceptor GetInterceptor()
+        public static HostIoInterceptor GetInterceptor()
         {
-            return _instance;
+            return Instance;
         }
 
         #endregion
@@ -29,19 +29,19 @@
 
         private PSHostUserInterface _psInterface;
 
-        private List<IHostIOSubscriber> _subscribers;
-        private StringBuilder _writeCache;
+        private readonly List<IHostIoSubscriber> _subscribers;
+        private readonly StringBuilder _writeCache;
 
-        private bool _paused = false;
+        private bool _paused;
 
         #endregion
 
         #region Constructors and Destructors
 
-        private HostIOInterceptor()
+        private HostIoInterceptor()
         {
             _psInterface = null;
-            _subscribers = new List<IHostIOSubscriber>();
+            _subscribers = new List<IHostIoSubscriber>();
             _writeCache = new StringBuilder();
         }
 
@@ -55,13 +55,13 @@
             set { _paused = value; }
         }
 
-        public PSHostUserInterface HostUI
+        public PSHostUserInterface HostUi
         {
             get { return _psInterface; }
             set { if (value != null && value != _psInterface) _psInterface = value; }
         }
 
-        public IEnumerable<IHostIOSubscriber> Subscribers
+        public IEnumerable<IHostIoSubscriber> Subscribers
         {
             get
             {
@@ -81,12 +81,12 @@
 
         #region Public Methods and Operators
 
-        public void AddSubscriber(IHostIOSubscriber subscriber)
+        public void AddSubscriber(IHostIoSubscriber subscriber)
         {
             if (!_subscribers.Contains(subscriber)) _subscribers.Add(subscriber);
         }
 
-        public bool RemoveSubscriber(IHostIOSubscriber subscriber)
+        public bool RemoveSubscriber(IHostIoSubscriber subscriber)
         {
             return _subscribers.Remove(subscriber);
         }
@@ -100,7 +100,7 @@
 
             if (!_paused)
             {
-                foreach (IHostIOSubscriber subscriber in _subscribers)
+                foreach (IHostIoSubscriber subscriber in _subscribers)
                 {
                     subscriber.Prompt(result);
                 }
@@ -118,7 +118,7 @@
 
             if (!_paused)
             {
-                foreach (IHostIOSubscriber subscriber in _subscribers)
+                foreach (IHostIoSubscriber subscriber in _subscribers)
                 {
                     subscriber.ChoicePrompt(choices[result]);
                 }
@@ -136,7 +136,7 @@
 
             if (!_paused)
             {
-                foreach (IHostIOSubscriber subscriber in _subscribers)
+                foreach (IHostIoSubscriber subscriber in _subscribers)
                 {
                     subscriber.CredentialPrompt(result);
                 }
@@ -160,7 +160,7 @@
 
             if (!_paused)
             {
-                foreach (IHostIOSubscriber subscriber in _subscribers)
+                foreach (IHostIoSubscriber subscriber in _subscribers)
                 {
                     subscriber.CredentialPrompt(result);
                 }
@@ -177,7 +177,7 @@
 
             if (!_paused)
             {
-                foreach (IHostIOSubscriber subscriber in _subscribers)
+                foreach (IHostIoSubscriber subscriber in _subscribers)
                 {
                     subscriber.ReadFromHost(result);
                 }
@@ -224,8 +224,8 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                    foreach (IHostIOSubscriber subscriber in _subscribers)
+                    string[] lines = message.Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
                         {
@@ -244,8 +244,8 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                    foreach (IHostIOSubscriber subscriber in _subscribers)
+                    string[] lines = message.Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
                         {
@@ -264,8 +264,8 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = _writeCache.ToString().Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                    foreach (IHostIOSubscriber subscriber in _subscribers)
+                    string[] lines = _writeCache.ToString().Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
                         {
@@ -286,8 +286,8 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = (_writeCache.ToString() + value).Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                    foreach (IHostIOSubscriber subscriber in _subscribers)
+                    string[] lines = (_writeCache + value).Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
                         {
@@ -307,8 +307,8 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = (_writeCache.ToString() + value).Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                    foreach (IHostIOSubscriber subscriber in _subscribers)
+                    string[] lines = (_writeCache + value).Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
                         {
@@ -328,7 +328,7 @@
             {
                 if (!_paused)
                 {
-                    foreach (IHostIOSubscriber subscriber in _subscribers)
+                    foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         subscriber.WriteProgress(sourceId, record);
                     }
@@ -344,8 +344,8 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                    foreach (IHostIOSubscriber subscriber in _subscribers)
+                    string[] lines = message.Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
                         {
@@ -364,8 +364,8 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-                    foreach (IHostIOSubscriber subscriber in _subscribers)
+                    string[] lines = message.Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
                         {

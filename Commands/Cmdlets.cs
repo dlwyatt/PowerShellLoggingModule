@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Management.Automation;
+﻿using System.Management.Automation;
 
 namespace PSLogging.Commands
 {
@@ -9,7 +6,7 @@ namespace PSLogging.Commands
     public class AddLogFileCommand : PSCmdlet
     {
         private StreamType _streams = StreamType.All;
-        private ScriptBlock _errorCallback = (ScriptBlock)null;
+        private ScriptBlock _errorCallback;
         private string _path;
         private LogFile _inputObject;
 
@@ -21,16 +18,8 @@ namespace PSLogging.Commands
         {
             get { return _path; }
 
-            set
-            {
-                if (System.IO.Path.IsPathRooted(value))
-                {
-                    _path = value;
-                }
-                else
-                {
-                    _path = System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
-                }
+            set {
+                _path = System.IO.Path.IsPathRooted(value) ? value : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
             }
         }
 
@@ -62,7 +51,7 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
+            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
 
             LogFile logFile;
 
@@ -83,7 +72,7 @@ namespace PSLogging.Commands
     [Cmdlet(VerbsCommon.Get, "LogFile")]
     public class GetLogFileCommand : PSCmdlet
     {
-        private string _path = null;
+        private string _path;
 
         [Parameter(Mandatory = false,
                    Position = 0,
@@ -93,26 +82,18 @@ namespace PSLogging.Commands
         public string Path
         {
             get { return _path; }
-            set
-            {
-                if (System.IO.Path.IsPathRooted(value))
-                {
-                    _path = value;
-                }
-                else
-                {
-                    _path = System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
-                }
+            set {
+                _path = System.IO.Path.IsPathRooted(value) ? value : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
             }
         }
 
         protected override void EndProcessing()
         {
-            HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
+            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
 
-            foreach (IHostIOSubscriber subscriber in interceptor.Subscribers)
+            foreach (IHostIoSubscriber subscriber in interceptor.Subscribers)
             {
-                LogFile logFile = subscriber as LogFile;
+                var logFile = subscriber as LogFile;
 
                 if (logFile != null && (_path == null || System.IO.Path.GetFullPath(logFile.Path) == System.IO.Path.GetFullPath(_path)))
                 {
@@ -132,7 +113,7 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
+            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
             interceptor.RemoveSubscriber(InputObject);
         }
     } // End DisableLogFileCommand class
@@ -142,7 +123,7 @@ namespace PSLogging.Commands
     {
         protected override void EndProcessing()
         {
-            HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
+            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
             interceptor.Paused = true;
         }
     } // End SuspendLoggingCommand class
@@ -152,7 +133,7 @@ namespace PSLogging.Commands
     {
         protected override void EndProcessing()
         {
-            HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
+            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
             interceptor.Paused = false;
         }
     } // End ResumeLoggingCommand class
@@ -160,13 +141,13 @@ namespace PSLogging.Commands
     [Cmdlet(VerbsCommon.Add, "OutputSubscriber")]
     public class AddOutputSubscriberCommand : PSCmdlet
     {
-        private ScriptBlock _onWriteOutput = null;
-        private ScriptBlock _onWriteDebug = null;
-        private ScriptBlock _onWriteVerbose = null;
-        private ScriptBlock _onWriteError = null;
-        private ScriptBlock _onWriteWarning = null;
+        private ScriptBlock _onWriteOutput;
+        private ScriptBlock _onWriteDebug;
+        private ScriptBlock _onWriteVerbose;
+        private ScriptBlock _onWriteError;
+        private ScriptBlock _onWriteWarning;
 
-        private ScriptBlockOutputSubscriber _inputObject = null;
+        private ScriptBlockOutputSubscriber _inputObject;
 
         #region Parameters
         [Parameter(ParameterSetName = "New")]
@@ -217,7 +198,7 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
+            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
 
             ScriptBlockOutputSubscriber subscriber;
 
@@ -240,11 +221,11 @@ namespace PSLogging.Commands
     {
         protected override void EndProcessing()
         {
-            HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
+            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
 
-            foreach (IHostIOSubscriber subscriber in interceptor.Subscribers)
+            foreach (IHostIoSubscriber subscriber in interceptor.Subscribers)
             {
-                ScriptBlockOutputSubscriber scriptBlockSubscriber = subscriber as ScriptBlockOutputSubscriber;
+                var scriptBlockSubscriber = subscriber as ScriptBlockOutputSubscriber;
                 if (scriptBlockSubscriber != null) WriteObject(scriptBlockSubscriber);
             }
         }
@@ -260,7 +241,7 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
+            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
             interceptor.RemoveSubscriber(InputObject);
         }
     } // End DisableOutputSubscriberCommand class

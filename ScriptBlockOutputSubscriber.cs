@@ -1,9 +1,8 @@
-﻿using System;
-using System.Management.Automation;
+﻿using System.Management.Automation;
 
 namespace PSLogging
 {
-    public class ScriptBlockOutputSubscriber : HostIOSubscriberBase
+    public class ScriptBlockOutputSubscriber : HostIoSubscriberBase
     {
         public ScriptBlock OnWriteDebug { get; set; }
         public ScriptBlock OnWriteOutput { get; set; }

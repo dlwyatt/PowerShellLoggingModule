@@ -3,7 +3,7 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 
 namespace PSLogging {
-    public class HostIOSubscriberBase :  IHostIOSubscriber {
+    public class HostIoSubscriberBase :  IHostIoSubscriber {
         public virtual void WriteProgress(long sourceId, ProgressRecord record) { }
 
         public virtual void ChoicePrompt(ChoiceDescription choice) { }
