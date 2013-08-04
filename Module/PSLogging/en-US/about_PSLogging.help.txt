@@ -1,0 +1,100 @@
+TOPIC
+    about_PSLogging
+
+SHORT DESCRIPTION
+    Provides background information about the PSLogging module.
+    
+LONG DESCRIPTION
+    This topic provides information about the PSLogging.IHostIOSubscriber
+    interface, the PSLogging.LogFile and PSLogging.ScriptBlockOutputSubscriber
+    classes that implement it, and the Windows PowerShell cmdlets used to
+    manage objects of these types.
+    
+  About PSLogging
+      The PSLogging module helps to solve the problem of how to capture
+      all output host, and tee it to a log file (including Error, Warning,
+      Verbose, and Debug streams), without relying on the user who called
+      a script to redirect those streams to a log file, and without relying
+      on calls to specific cmdlets or functions.  An existing PowerShell
+      script can achieve full logging by importing this module and executing
+      the Add-LogFile cmdlet.
+      
+      It accomplishes this by using .NET Reflection to access private members
+      of the PowerShell classes.  This is a double-edged sword, as any time
+      Microsoft releases a new version of PowerShell (or even a patch to the
+      existing version), this module's functionality may break and require an
+      update.  If you prefer not to use this approach, there is a script-based
+      module with similar (though less complete) functionality available at
+      http://gallery.technet.microsoft.com/scriptcenter/Write-timestamped-output-4ff1565f
+    
+  PSLogging.HostIOInterceptor and PSLogging.IHostIOSubscriber
+      The heart of this module is the HostIOInterceptor class, which is a subclass
+      of Microsoft's System.Management.Automation.Host.PSHostUserInterface class
+      and acts as a middle man between the InternalHostUserInterface class and its
+      externalUI field.  Every time the PowerShell host sends text output to the
+      console or ISE output window, it does so via calls to the externalUI field.
+      
+      This module replaces the externalUI field with an instace of the
+      HostIOInterceptor object.  HostIOInterceptor passes calls on to the original
+      externalUI object, and also to any number of objects implementing the
+      PSLogging.IHostIOSubscriber interface, with one minor difference: when passing
+      output to the subscribers, it is broken up into lines, and the strings sent
+      to the subscriber include the trailing carriage return/newline characters.
+      
+      The module provides two classes that implement IHostIOSubscriber out of the
+      box: PSLogging.LogFile and PSLogging.ScriptBlockOutputSubscriber.  Both of
+      these classes focus only on host Output (Output, Error, Warning, Verbose and
+      Debug streams).  The LogFile class has certain hard-coded behavior that I
+      desire on my own scripts and log files: it prepends each non-blank line of
+      output with a date/time string (in a culture-invariant format to avoid confusion
+      over time zones or date formats).  The ScriptBlockOutputSubscriber class exists
+      to provide a dynamic alternative for people who might not want the same logging
+      behavior that I use; it simply executes script blocks for each type of output,
+      and allows the script writer to decide what to do with the text.
+      
+      Please note that this is very low-level interception of text, after PowerShell's
+      formatting cmdlets have already processed the objects in the pipeline.  You cannot
+      intercept an ErrorRecord object via the HostInterceptor, for example; you can only
+      intercept the several lines of text that are displayed when an ErrorRecord object
+      is displayed in the console.  This works very well when creating text-based log files,
+      but will be of little use if you want to add an Event Log entry or database record
+      for an entire error record.
+      
+  PSLogging Cmdlets
+ 
+      When the PSLogging module is loaded, the following Cmdlets are available:
+     
+          Cmdlet                     Descriptions
+          ---------                  --------------------------------
+          Add-LogFile                Creates or attaches a LogFile to the interceptor.
+          Get-LogFile                Retrieves references to attached LogFile objects.
+          Disable-LogFile             Detaches a LogFile object from the interceptor.
+          Add-OutputSubscriber       Creates or attaches a ScriptBlockOutputSubscriber.
+          Get-OutputSubscriber       Retrieves references to attached ScriptBlockOutputSubscribers.
+          Disable-OutputSubscriber    Detaches a ScriptBlockOutputSubscriber.
+          Suspend-Logging            Temporarily stops the interceptor from making calls to subscribers.
+          Resume-Logging             Resumes interceptor-to-subscriber calls.
+ 
+  Notes
+      
+      This logging technique creates certain "circular reference" style situations which may
+      cause infinite output to either the console, or worse, to a log file.  For example,
+      creating a LogFile object and then executing Get-Content on its file (allowing the output
+      of Get-Content to be displayed to the screen) will run forever until either cancelled,
+      or until it errors out for some reason (probably because you've just filled your hard disk).
+      
+      To be on the safe side, I'd recommend not attempting to read the log file at all until
+      after you've called Disable-LogFile.
+      
+      If, for some reason, you need to perform an action like this, that's what the Suspend-Logging
+      and Resume-Logging Cmdlets are for.
+
+SEE ALSO
+    Add-LogFile
+    Get-LogFile
+    Disable-LogFile
+    Add-OutputSubscriber
+    Get-OutputSubscriber
+    Disable-OutputSubscriber
+    Suspend-Logging
+    Resume-Logging
