@@ -18,11 +18,11 @@ namespace PSLogging
             ScriptBlock onWriteError,
             ScriptBlock onWriteWarning)
         {
-            this.OnWriteOutput = onWriteOutput;
-            this.OnWriteDebug = onWriteDebug;
-            this.OnWriteVerbose = onWriteVerbose;
-            this.OnWriteError = onWriteError;
-            this.OnWriteWarning = onWriteWarning;
+            OnWriteOutput = onWriteOutput;
+            OnWriteDebug = onWriteDebug;
+            OnWriteVerbose = onWriteVerbose;
+            OnWriteError = onWriteError;
+            OnWriteWarning = onWriteWarning;
         }
 
         public ScriptBlockOutputSubscriber()
@@ -31,32 +31,32 @@ namespace PSLogging
 
         public override void WriteDebug(string message)
         {
-            if (this.OnWriteDebug != null) this.OnWriteDebug.Invoke(new object[] { message });
+            if (OnWriteDebug != null) OnWriteDebug.Invoke(new object[] { message });
         }
 
         public override void WriteOutput(string message)
         {
-            if (this.OnWriteOutput != null) this.OnWriteOutput.Invoke(new object[] { message });
+            if (OnWriteOutput != null) OnWriteOutput.Invoke(new object[] { message });
         }
 
         public override void WriteHost(string message)
         {
-            if (this.OnWriteOutput != null) this.OnWriteOutput.Invoke(new object[] { message });
+            if (OnWriteOutput != null) OnWriteOutput.Invoke(new object[] { message });
         }
 
         public override void WriteError(string message)
         {
-            if (this.OnWriteError != null) this.OnWriteError.Invoke(new object[] { message });
+            if (OnWriteError != null) OnWriteError.Invoke(new object[] { message });
         }
 
         public override void WriteVerbose(string message)
         {
-            if (this.OnWriteVerbose != null) this.OnWriteVerbose.Invoke(new object[] { message });
+            if (OnWriteVerbose != null) OnWriteVerbose.Invoke(new object[] { message });
         }
 
         public override void WriteWarning(string message)
         {
-            if (this.OnWriteWarning != null) this.OnWriteWarning.Invoke(new object[] { message });
+            if (OnWriteWarning != null) OnWriteWarning.Invoke(new object[] { message });
         }
     }
 }

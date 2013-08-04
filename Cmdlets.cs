@@ -29,7 +29,7 @@ namespace PSLogging.Commands
                 }
                 else
                 {
-                    _path = System.IO.Path.Combine(this.SessionState.Path.CurrentLocation.Path, value);
+                    _path = System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
                 }
             }
         }
@@ -44,8 +44,8 @@ namespace PSLogging.Commands
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnError
         {
-            get { return this._errorCallback; }
-            set { this._errorCallback = value; }
+            get { return _errorCallback; }
+            set { _errorCallback = value; }
         }
 
         [Parameter(ParameterSetName = "AttachExisting",
@@ -68,7 +68,7 @@ namespace PSLogging.Commands
 
             if (ParameterSetName == "New")
             {
-                logFile = new LogFile(this.Path, _streams, _errorCallback);
+                logFile = new LogFile(_path, _streams, _errorCallback);
                 WriteObject(logFile);
             }
             else
@@ -101,7 +101,7 @@ namespace PSLogging.Commands
                 }
                 else
                 {
-                    _path = System.IO.Path.Combine(this.SessionState.Path.CurrentLocation.Path, value);
+                    _path = System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace PSLogging.Commands
         protected override void EndProcessing()
         {
             HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
-            interceptor.RemoveSubscriber(this.InputObject);
+            interceptor.RemoveSubscriber(InputObject);
         }
     } // End DisableLogFileCommand class
 
@@ -221,7 +221,7 @@ namespace PSLogging.Commands
 
             ScriptBlockOutputSubscriber subscriber;
 
-            if (this.ParameterSetName == "New")
+            if (ParameterSetName == "New")
             {
                 subscriber = new ScriptBlockOutputSubscriber(_onWriteOutput, _onWriteDebug, _onWriteVerbose, _onWriteError, _onWriteWarning);
                 WriteObject(subscriber);
@@ -261,7 +261,7 @@ namespace PSLogging.Commands
         protected override void EndProcessing()
         {
             HostIOInterceptor interceptor = HostIOInterceptor.GetInterceptor();
-            interceptor.RemoveSubscriber(this.InputObject);
+            interceptor.RemoveSubscriber(InputObject);
         }
     } // End DisableOutputSubscriberCommand class
 }

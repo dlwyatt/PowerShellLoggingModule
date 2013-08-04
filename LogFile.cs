@@ -27,7 +27,7 @@
         {
             get
             {
-                return System.IO.Path.Combine(this._path, this._fileName);
+                return System.IO.Path.Combine(_path, _fileName);
             }
         }
 
@@ -40,11 +40,11 @@
 
         public LogFile(string filename, StreamType streams, ScriptBlock errorCallback)
         {
-            this._fileName = System.IO.Path.GetFileName(filename);
-            this._path = System.IO.Path.GetDirectoryName(filename);
+            _fileName = System.IO.Path.GetFileName(filename);
+            _path = System.IO.Path.GetDirectoryName(filename);
 
-            this.Streams = streams;
-            this.ErrorCallback = errorCallback;
+            Streams = streams;
+            ErrorCallback = errorCallback;
         }
 
         public LogFile(string filename)
@@ -90,7 +90,7 @@
 
         public override void WriteDebug(string message)
         {
-            if ((this.Streams & StreamType.Debug) == StreamType.Debug)
+            if ((Streams & StreamType.Debug) == StreamType.Debug)
             {
                 try
                 {
@@ -100,14 +100,14 @@
                         message = String.Format("{0,-29} - [D] {1}", DateTime.Now.ToString(DateTimeFormat), message);
                     }
 
-                    File.AppendAllText(System.IO.Path.Combine(this._path, this._fileName), message);
+                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
                 }
                 catch (Exception e)
                 {
-                    if (this.ErrorCallback != null)
+                    if (ErrorCallback != null)
                     {
                         HostIOInterceptor.GetInterceptor().Paused = true;
-                        this.ErrorCallback.Invoke(new object[] { this, e });
+                        ErrorCallback.Invoke(new object[] { this, e });
                         HostIOInterceptor.GetInterceptor().Paused = false;
                     }
                 }
@@ -116,7 +116,7 @@
 
         public override void WriteError(string message)
         {
-            if ((this.Streams & StreamType.Error) == StreamType.Error)
+            if ((Streams & StreamType.Error) == StreamType.Error)
             {
                 if (message == null) message = String.Empty;
 
@@ -128,14 +128,14 @@
                         message = String.Format("{0,-29} - [E] {1}", DateTime.Now.ToString(DateTimeFormat), message);
                     }
 
-                    File.AppendAllText(System.IO.Path.Combine(this._path, this._fileName), message);
+                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
                 }
                 catch (Exception e)
                 {
-                    if (this.ErrorCallback != null)
+                    if (ErrorCallback != null)
                     {
                         HostIOInterceptor.GetInterceptor().Paused = true;
-                        this.ErrorCallback.Invoke(new object[] { this, e });
+                        ErrorCallback.Invoke(new object[] { this, e });
                         HostIOInterceptor.GetInterceptor().Paused = false;
                     }
                 }
@@ -144,7 +144,7 @@
 
         public override void WriteOutput(string message)
         {
-            if ((this.Streams & StreamType.Output) == StreamType.Output)
+            if ((Streams & StreamType.Output) == StreamType.Output)
             {
                 if (message == null) message = String.Empty;
 
@@ -156,14 +156,14 @@
                         message = String.Format("{0,-29} - {1}", DateTime.Now.ToString(DateTimeFormat), message);
                     }
 
-                    File.AppendAllText(System.IO.Path.Combine(this._path, this._fileName), message);
+                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
                 }
                 catch (Exception e)
                 {
-                    if (this.ErrorCallback != null)
+                    if (ErrorCallback != null)
                     {
                         HostIOInterceptor.GetInterceptor().Paused = true;
-                        this.ErrorCallback.Invoke(new object[] { this, e });
+                        ErrorCallback.Invoke(new object[] { this, e });
                         HostIOInterceptor.GetInterceptor().Paused = false;
                     }
                 }
@@ -172,7 +172,7 @@
 
         public override void WriteHost(string message)
         {
-            if ((this.Streams & StreamType.Output) == StreamType.Output)
+            if ((Streams & StreamType.Output) == StreamType.Output)
             {
                 if (message == null) message = String.Empty;
 
@@ -184,14 +184,14 @@
                         message = String.Format("{0,-29} - {1}", DateTime.Now.ToString(DateTimeFormat), message);
                     }
 
-                    File.AppendAllText(System.IO.Path.Combine(this._path, this._fileName), message);
+                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
                 }
                 catch (Exception e)
                 {
-                    if (this.ErrorCallback != null)
+                    if (ErrorCallback != null)
                     {
                         HostIOInterceptor.GetInterceptor().Paused = true;
-                        this.ErrorCallback.Invoke(new object[] { this, e });
+                        ErrorCallback.Invoke(new object[] { this, e });
                         HostIOInterceptor.GetInterceptor().Paused = false;
                     }
                 }
@@ -201,7 +201,7 @@
 
         public override void WriteVerbose(string message)
         {
-            if ((this.Streams & StreamType.Verbose) == StreamType.Verbose)
+            if ((Streams & StreamType.Verbose) == StreamType.Verbose)
             {
                 if (message == null) message = String.Empty;
 
@@ -213,14 +213,14 @@
                         message = String.Format("{0,-29} - [V] {1}", DateTime.Now.ToString(DateTimeFormat), message);
                     }
 
-                    File.AppendAllText(System.IO.Path.Combine(this._path, this._fileName), message);
+                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
                 }
                 catch (Exception e)
                 {
-                    if (this.ErrorCallback != null)
+                    if (ErrorCallback != null)
                     {
                         HostIOInterceptor.GetInterceptor().Paused = true;
-                        this.ErrorCallback.Invoke(new object[] { this, e });
+                        ErrorCallback.Invoke(new object[] { this, e });
                         HostIOInterceptor.GetInterceptor().Paused = false;
                     }
                 }
@@ -229,7 +229,7 @@
 
         public override void WriteWarning(string message)
         {
-            if ((this.Streams & StreamType.Warning) == StreamType.Warning)
+            if ((Streams & StreamType.Warning) == StreamType.Warning)
             {
                 if (message == null) message = String.Empty;
 
@@ -241,16 +241,16 @@
                         message = String.Format("{0,-29} - [W] {1}", DateTime.Now.ToString(DateTimeFormat), message);
                     }
 
-                    File.AppendAllText(System.IO.Path.Combine(this._path, this._fileName), message);
+                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
                 }
                 catch (Exception e)
                 {
-                    if (this.ErrorCallback != null)
+                    if (ErrorCallback != null)
                     {
                         try
                         {
                             HostIOInterceptor.GetInterceptor().Paused = true;
-                            this.ErrorCallback.Invoke(new object[] { this, e });
+                            ErrorCallback.Invoke(new object[] { this, e });
                             HostIOInterceptor.GetInterceptor().Paused = false;
                         }
                         catch { }
