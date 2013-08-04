@@ -224,7 +224,7 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
@@ -244,7 +244,7 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
@@ -264,7 +264,7 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = _writeCache.ToString().Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    string[] lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
@@ -286,7 +286,7 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = (_writeCache + value).Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
@@ -307,7 +307,7 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = (_writeCache + value).Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
@@ -344,7 +344,7 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
@@ -364,7 +364,7 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new[] { "\r\n" }, StringSplitOptions.None);
+                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     foreach (IHostIoSubscriber subscriber in _subscribers)
                     {
                         foreach (string line in lines)
