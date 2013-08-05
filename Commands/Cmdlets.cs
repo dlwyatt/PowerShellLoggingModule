@@ -22,7 +22,8 @@ namespace PSLogging.Commands
         {
             get { return _path; }
 
-            set {
+            set
+            {
                 _path = System.IO.Path.IsPathRooted(value) ? value : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
             }
         }
@@ -86,7 +87,8 @@ namespace PSLogging.Commands
         public string Path
         {
             get { return _path; }
-            set {
+            set
+            {
                 _path = System.IO.Path.IsPathRooted(value) ? value : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
             }
         }

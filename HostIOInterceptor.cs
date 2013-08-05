@@ -324,7 +324,7 @@ namespace PSLogging
             {
                 if (!_paused)
                 {
-                    var lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     var deadReferences = new List<WeakReference>();
 
                     foreach (WeakReference reference in _subscribers)
@@ -359,7 +359,7 @@ namespace PSLogging
             {
                 if (!_paused)
                 {
-                    var lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     var deadReferences = new List<WeakReference>();
 
                     foreach (WeakReference reference in _subscribers)
@@ -394,7 +394,7 @@ namespace PSLogging
             {
                 if (!_paused)
                 {
-                    var lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    string[] lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     var deadReferences = new List<WeakReference>();
 
                     foreach (WeakReference reference in _subscribers)
@@ -430,7 +430,7 @@ namespace PSLogging
             {
                 if (!_paused)
                 {
-                    var lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     var deadReferences = new List<WeakReference>();
 
                     foreach (WeakReference reference in _subscribers)
@@ -454,7 +454,7 @@ namespace PSLogging
                         _subscribers.Remove(reference);
                     }
                 }
-                
+
                 _writeCache.Length = 0;
                 _psInterface.WriteLine(value);
             }
@@ -466,12 +466,12 @@ namespace PSLogging
             {
                 if (!_paused)
                 {
-                    var lines = (_writeCache + value).Split(new[] {"\r\n", "\n"}, StringSplitOptions.None);
+                    string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     var deadReferences = new List<WeakReference>();
 
                     foreach (WeakReference reference in _subscribers)
                     {
-                        var subscriber = (IHostIoSubscriber) reference.Target;
+                        var subscriber = (IHostIoSubscriber)reference.Target;
                         if (subscriber == null)
                         {
                             deadReferences.Add(reference);
@@ -533,7 +533,7 @@ namespace PSLogging
             {
                 if (!_paused)
                 {
-                    var lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     var deadReferences = new List<WeakReference>();
 
                     foreach (WeakReference reference in _subscribers)
@@ -568,7 +568,7 @@ namespace PSLogging
             {
                 if (!_paused)
                 {
-                    var lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
                     var deadReferences = new List<WeakReference>();
 
                     foreach (WeakReference reference in _subscribers)
