@@ -21,7 +21,7 @@ try {
     $originalUI = $externalUIField.GetValue($ui)
     
     $HostIoInterceptor = [PSLogging.HostIoInterceptor]::GetInterceptor()
-    $HostIoInterceptor.HostUI = $originalUI
+    $HostIoInterceptor.HostUi = $originalUI
 
     $externalUIField.SetValue($ui, $HostIoInterceptor)
     

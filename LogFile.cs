@@ -1,8 +1,12 @@
-﻿namespace PSLogging
+﻿using System;
+using System.IO;
+using System.Management.Automation;
+
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedMember.Global
+
+namespace PSLogging
 {
-    using System;
-    using System.IO;
-    using System.Management.Automation;
 
     public class LogFile : HostIoSubscriberBase
     {
@@ -36,28 +40,13 @@
 
         #region Constructors and Destructors
 
-        public LogFile(string filename, StreamType streams, ScriptBlock errorCallback)
+        public LogFile(string filename, StreamType streams = StreamType.All, ScriptBlock errorCallback = null)
         {
             _fileName = System.IO.Path.GetFileName(filename);
             _path = System.IO.Path.GetDirectoryName(filename);
 
             Streams = streams;
             ErrorCallback = errorCallback;
-        }
-
-        public LogFile(string filename)
-            : this(filename, StreamType.All, null)
-        {
-        }
-
-        public LogFile(string filename, ScriptBlock errorCallback)
-            : this(filename, StreamType.All, errorCallback)
-        {
-        }
-
-        public LogFile(string filename, StreamType streams)
-            : this(filename, streams, null)
-        {
         }
 
         #endregion
@@ -168,35 +157,6 @@
             }
         }
 
-        public override void WriteHost(string message)
-        {
-            if ((Streams & StreamType.Output) == StreamType.Output)
-            {
-                if (message == null) message = String.Empty;
-
-                try
-                {
-                    CheckDirectory();
-                    if (message.Trim() != String.Empty)
-                    {
-                        message = String.Format("{0,-29} - {1}", DateTime.Now.ToString(DateTimeFormat), message);
-                    }
-
-                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
-                }
-                catch (Exception e)
-                {
-                    if (ErrorCallback != null)
-                    {
-                        HostIoInterceptor.GetInterceptor().Paused = true;
-                        ErrorCallback.Invoke(new object[] { this, e });
-                        HostIoInterceptor.GetInterceptor().Paused = false;
-                    }
-                }
-            }
-        }
-
-
         public override void WriteVerbose(string message)
         {
             if ((Streams & StreamType.Verbose) == StreamType.Verbose)
@@ -261,3 +221,6 @@
         #endregion
     }
 }
+
+// ReSharper restore MemberCanBePrivate.Global
+// ReSharper restore UnusedMember.Global

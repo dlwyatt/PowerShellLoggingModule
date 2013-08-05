@@ -1,8 +1,11 @@
-﻿namespace PSLogging
+﻿using System.Collections.Generic;
+using System.Management.Automation;
+using System.Management.Automation.Host;
+
+// ReSharper disable UnusedParameter.Global
+
+namespace PSLogging
 {
-    using System.Collections.Generic;
-    using System.Management.Automation;
-    using System.Management.Automation.Host;
 
     /// <summary>
     /// The Logger interface.
@@ -77,57 +80,18 @@
 
         #endregion
 
-        /// <summary>
-        /// This method is called when a message is written to the debug stream.
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
-        /// <remarks>
-        /// Messages are only written to the debug stream from within a cmdlet with the CmdletBinding attribute and when the -Debug parameter has been specified.
-        /// </remarks>
         void WriteDebug(string message);
 
-        /// <summary>
-        /// This method is called when a message is written to the error stream.
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
         void WriteError(string message);
 
-        /// <summary>
-        /// This method is called when output is written to the output stream.
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
         void WriteOutput(string message);
 
-        /// <summary>
-        /// The method is called when output is written with the Write-Host cmdlet to the output stream.
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
-        void WriteHost(string message);
-
-        /// <summary>
-        /// This method is called when a message is written to the Verbose stream.
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
         void WriteVerbose(string message);
 
-        /// <summary>
-        /// This method is called when a message is written to the Warning stream.
-        /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
         void WriteWarning(string message);
 
         #endregion
     }
 }
+
+// ReSharper restore UnusedParameter.Global

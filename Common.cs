@@ -1,5 +1,7 @@
 ﻿using System;
 
+// ReSharper disable UnusedMember.Global
+
 namespace PSLogging
 {
     [Flags]
@@ -14,3 +16,5 @@ namespace PSLogging
         All = Output | Verbose | Warning | Error | Debug
     }
 }
+
+// ReSharper restore UnusedMember.Global

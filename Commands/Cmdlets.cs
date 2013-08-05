@@ -1,5 +1,9 @@
 ﻿using System.Management.Automation;
 
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable UnusedMember.Global
+
 namespace PSLogging.Commands
 {
     [Cmdlet(VerbsCommon.Add, "LogFile")]
@@ -246,3 +250,7 @@ namespace PSLogging.Commands
         }
     } // End DisableOutputSubscriberCommand class
 }
+
+// ReSharper restore MemberCanBePrivate.Global
+// ReSharper restore UnusedAutoPropertyAccessor.Global
+// ReSharper restore UnusedMember.Global

@@ -41,12 +41,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common.cs" />
-    <Compile Include="IHostIOSubscriber.cs" />
+    <Compile Include="IHostIoSubscriber.cs" />
     <Compile Include="Commands\Cmdlets.cs" />
     <Compile Include="LogFile.cs" />
-    <Compile Include="HostIOInterceptor.cs" />
+    <Compile Include="HostIoInterceptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="HostIOSubscriberBase.cs" />
+    <Compile Include="HostIoSubscriberBase.cs" />
     <Compile Include="ScriptBlockOutputSubscriber.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

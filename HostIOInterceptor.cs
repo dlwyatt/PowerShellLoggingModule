@@ -1,13 +1,16 @@
-﻿namespace PSLogging
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Management.Automation;
-    using System.Management.Automation.Host;
-    using System.Security;
-    using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Management.Automation;
+using System.Management.Automation.Host;
+using System.Security;
+using System.Text;
 
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedMethodReturnValue.Global
+
+namespace PSLogging
+{
     public class HostIoInterceptor : PSHostUserInterface
     {
         #region Static Fields
@@ -29,7 +32,7 @@
 
         private PSHostUserInterface _psInterface;
 
-        private readonly List<IHostIoSubscriber> _subscribers;
+        private readonly List<WeakReference> _subscribers;
         private readonly StringBuilder _writeCache;
 
         private bool _paused;
@@ -41,7 +44,7 @@
         private HostIoInterceptor()
         {
             _psInterface = null;
-            _subscribers = new List<IHostIoSubscriber>();
+            _subscribers = new List<WeakReference>();
             _writeCache = new StringBuilder();
         }
 
@@ -65,7 +68,11 @@
         {
             get
             {
-                return _subscribers;
+                foreach (WeakReference reference in _subscribers)
+                {
+                    var subscriber = (IHostIoSubscriber)reference.Target;
+                    if (subscriber != null) yield return subscriber;
+                }
             }
         }
 
@@ -83,12 +90,30 @@
 
         public void AddSubscriber(IHostIoSubscriber subscriber)
         {
-            if (!_subscribers.Contains(subscriber)) _subscribers.Add(subscriber);
+            foreach (WeakReference reference in _subscribers)
+            {
+                if (reference.Target == subscriber)
+                {
+                    return;
+                }
+            }
+
+            _subscribers.Add(new WeakReference(subscriber));
         }
 
-        public bool RemoveSubscriber(IHostIoSubscriber subscriber)
+        public void RemoveSubscriber(IHostIoSubscriber subscriber)
         {
-            return _subscribers.Remove(subscriber);
+            var matches = new List<WeakReference>();
+
+            foreach (WeakReference reference in _subscribers)
+            {
+                if (reference.Target == subscriber) matches.Add(reference);
+            }
+
+            foreach (WeakReference reference in matches)
+            {
+                _subscribers.Remove(reference);
+            }
         }
 
         public override Dictionary<string, PSObject> Prompt(
@@ -96,13 +121,28 @@
         {
             if (_psInterface == null) throw new InvalidOperationException();
 
-            Dictionary<string, PSObject> result = _psInterface.Prompt(caption, message, descriptions);
+            var result = _psInterface.Prompt(caption, message, descriptions);
 
             if (!_paused)
             {
-                foreach (IHostIoSubscriber subscriber in _subscribers)
+                var deadReferences = new List<WeakReference>();
+
+                foreach (WeakReference reference in _subscribers)
                 {
-                    subscriber.Prompt(result);
+                    var subscriber = (IHostIoSubscriber)reference.Target;
+                    if (subscriber == null)
+                    {
+                        deadReferences.Add(reference);
+                    }
+                    else
+                    {
+                        subscriber.Prompt(result);
+                    }
+                }
+
+                foreach (WeakReference reference in deadReferences)
+                {
+                    _subscribers.Remove(reference);
                 }
             }
 
@@ -114,13 +154,28 @@
         {
             if (_psInterface == null) throw new InvalidOperationException();
 
-            int result = _psInterface.PromptForChoice(caption, message, choices, defaultChoice);
+            var result = _psInterface.PromptForChoice(caption, message, choices, defaultChoice);
 
             if (!_paused)
             {
-                foreach (IHostIoSubscriber subscriber in _subscribers)
+                var deadReferences = new List<WeakReference>();
+
+                foreach (WeakReference reference in _subscribers)
                 {
-                    subscriber.ChoicePrompt(choices[result]);
+                    var subscriber = (IHostIoSubscriber)reference.Target;
+                    if (subscriber == null)
+                    {
+                        deadReferences.Add(reference);
+                    }
+                    else
+                    {
+                        subscriber.ChoicePrompt(choices[result]);
+                    }
+                }
+
+                foreach (WeakReference reference in deadReferences)
+                {
+                    _subscribers.Remove(reference);
                 }
             }
 
@@ -132,13 +187,28 @@
         {
             if (_psInterface == null) throw new InvalidOperationException();
 
-            PSCredential result = _psInterface.PromptForCredential(caption, message, userName, targetName);
+            var result = _psInterface.PromptForCredential(caption, message, userName, targetName);
 
             if (!_paused)
             {
-                foreach (IHostIoSubscriber subscriber in _subscribers)
+                var deadReferences = new List<WeakReference>();
+
+                foreach (WeakReference reference in _subscribers)
                 {
-                    subscriber.CredentialPrompt(result);
+                    var subscriber = (IHostIoSubscriber)reference.Target;
+                    if (subscriber == null)
+                    {
+                        deadReferences.Add(reference);
+                    }
+                    else
+                    {
+                        subscriber.CredentialPrompt(result);
+                    }
+                }
+
+                foreach (WeakReference reference in deadReferences)
+                {
+                    _subscribers.Remove(reference);
                 }
             }
 
@@ -155,14 +225,29 @@
         {
             if (_psInterface == null) throw new InvalidOperationException();
 
-            PSCredential result = _psInterface.PromptForCredential(
+            var result = _psInterface.PromptForCredential(
                 caption, message, userName, targetName, allowedCredentialTypes, options);
 
             if (!_paused)
             {
-                foreach (IHostIoSubscriber subscriber in _subscribers)
+                var deadReferences = new List<WeakReference>();
+
+                foreach (WeakReference reference in _subscribers)
                 {
-                    subscriber.CredentialPrompt(result);
+                    var subscriber = (IHostIoSubscriber)reference.Target;
+                    if (subscriber == null)
+                    {
+                        deadReferences.Add(reference);
+                    }
+                    else
+                    {
+                        subscriber.CredentialPrompt(result);
+                    }
+                }
+
+                foreach (WeakReference reference in deadReferences)
+                {
+                    _subscribers.Remove(reference);
                 }
             }
 
@@ -173,13 +258,28 @@
         {
             if (_psInterface == null) throw new InvalidOperationException();
 
-            string result = _psInterface.ReadLine();
+            var result = _psInterface.ReadLine();
 
             if (!_paused)
             {
-                foreach (IHostIoSubscriber subscriber in _subscribers)
+                var deadReferences = new List<WeakReference>();
+
+                foreach (WeakReference reference in _subscribers)
                 {
-                    subscriber.ReadFromHost(result);
+                    var subscriber = (IHostIoSubscriber)reference.Target;
+                    if (subscriber == null)
+                    {
+                        deadReferences.Add(reference);
+                    }
+                    else
+                    {
+                        subscriber.ReadFromHost(result);
+                    }
+                }
+
+                foreach (WeakReference reference in deadReferences)
+                {
+                    _subscribers.Remove(reference);
                 }
             }
 
@@ -224,13 +324,28 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                    foreach (IHostIoSubscriber subscriber in _subscribers)
+                    var lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    var deadReferences = new List<WeakReference>();
+
+                    foreach (WeakReference reference in _subscribers)
                     {
-                        foreach (string line in lines)
+                        var subscriber = (IHostIoSubscriber)reference.Target;
+                        if (subscriber == null)
                         {
-                            subscriber.WriteDebug(line + "\r\n");
+                            deadReferences.Add(reference);
                         }
+                        else
+                        {
+                            foreach (string line in lines)
+                            {
+                                subscriber.WriteDebug(line + "\r\n");
+                            }
+                        }
+                    }
+
+                    foreach (WeakReference reference in deadReferences)
+                    {
+                        _subscribers.Remove(reference);
                     }
                 }
 
@@ -244,13 +359,28 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                    foreach (IHostIoSubscriber subscriber in _subscribers)
+                    var lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    var deadReferences = new List<WeakReference>();
+
+                    foreach (WeakReference reference in _subscribers)
                     {
-                        foreach (string line in lines)
+                        var subscriber = (IHostIoSubscriber)reference.Target;
+                        if (subscriber == null)
                         {
-                            subscriber.WriteError(line + "\r\n");
+                            deadReferences.Add(reference);
                         }
+                        else
+                        {
+                            foreach (string line in lines)
+                            {
+                                subscriber.WriteError(line + "\r\n");
+                            }
+                        }
+                    }
+
+                    foreach (WeakReference reference in deadReferences)
+                    {
+                        _subscribers.Remove(reference);
                     }
                 }
 
@@ -264,18 +394,32 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                    foreach (IHostIoSubscriber subscriber in _subscribers)
+                    var lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    var deadReferences = new List<WeakReference>();
+
+                    foreach (WeakReference reference in _subscribers)
                     {
-                        foreach (string line in lines)
+                        var subscriber = (IHostIoSubscriber)reference.Target;
+                        if (subscriber == null)
                         {
-                            subscriber.WriteOutput(line + "\r\n");
+                            deadReferences.Add(reference);
+                        }
+                        else
+                        {
+                            foreach (string line in lines)
+                            {
+                                subscriber.WriteOutput(line + "\r\n");
+                            }
                         }
                     }
 
-                    _writeCache.Length = 0;
+                    foreach (WeakReference reference in deadReferences)
+                    {
+                        _subscribers.Remove(reference);
+                    }
                 }
 
+                _writeCache.Length = 0;
                 _psInterface.WriteLine();
             }
         }
@@ -286,17 +430,32 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                    foreach (IHostIoSubscriber subscriber in _subscribers)
+                    var lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    var deadReferences = new List<WeakReference>();
+
+                    foreach (WeakReference reference in _subscribers)
                     {
-                        foreach (string line in lines)
+                        var subscriber = (IHostIoSubscriber)reference.Target;
+                        if (subscriber == null)
                         {
-                            subscriber.WriteOutput(line + "\r\n");
+                            deadReferences.Add(reference);
+                        }
+                        else
+                        {
+                            foreach (string line in lines)
+                            {
+                                subscriber.WriteOutput(line + "\r\n");
+                            }
                         }
                     }
 
-                    _writeCache.Length = 0;
+                    foreach (WeakReference reference in deadReferences)
+                    {
+                        _subscribers.Remove(reference);
+                    }
                 }
+                
+                _writeCache.Length = 0;
                 _psInterface.WriteLine(value);
             }
         }
@@ -307,17 +466,32 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                    foreach (IHostIoSubscriber subscriber in _subscribers)
+                    var lines = (_writeCache + value).Split(new[] {"\r\n", "\n"}, StringSplitOptions.None);
+                    var deadReferences = new List<WeakReference>();
+
+                    foreach (WeakReference reference in _subscribers)
                     {
-                        foreach (string line in lines)
+                        var subscriber = (IHostIoSubscriber) reference.Target;
+                        if (subscriber == null)
                         {
-                            subscriber.WriteOutput(line + "\r\n");
+                            deadReferences.Add(reference);
+                        }
+                        else
+                        {
+                            foreach (string line in lines)
+                            {
+                                subscriber.WriteOutput(line + "\r\n");
+                            }
                         }
                     }
 
-                    _writeCache.Length = 0;
+                    foreach (WeakReference reference in deadReferences)
+                    {
+                        _subscribers.Remove(reference);
+                    }
                 }
+
+                _writeCache.Length = 0;
                 _psInterface.WriteLine(foregroundColor, backgroundColor, value);
             }
         }
@@ -328,9 +502,24 @@
             {
                 if (!_paused)
                 {
-                    foreach (IHostIoSubscriber subscriber in _subscribers)
+                    var deadReferences = new List<WeakReference>();
+
+                    foreach (WeakReference reference in _subscribers)
                     {
-                        subscriber.WriteProgress(sourceId, record);
+                        var subscriber = (IHostIoSubscriber)reference.Target;
+                        if (subscriber == null)
+                        {
+                            deadReferences.Add(reference);
+                        }
+                        else
+                        {
+                            subscriber.WriteProgress(sourceId, record);
+                        }
+                    }
+
+                    foreach (WeakReference reference in deadReferences)
+                    {
+                        _subscribers.Remove(reference);
                     }
                 }
 
@@ -344,13 +533,28 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                    foreach (IHostIoSubscriber subscriber in _subscribers)
+                    var lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    var deadReferences = new List<WeakReference>();
+
+                    foreach (WeakReference reference in _subscribers)
                     {
-                        foreach (string line in lines)
+                        var subscriber = (IHostIoSubscriber)reference.Target;
+                        if (subscriber == null)
                         {
-                            subscriber.WriteVerbose(line + "\r\n");
+                            deadReferences.Add(reference);
                         }
+                        else
+                        {
+                            foreach (string line in lines)
+                            {
+                                subscriber.WriteVerbose(line + "\r\n");
+                            }
+                        }
+                    }
+
+                    foreach (WeakReference reference in deadReferences)
+                    {
+                        _subscribers.Remove(reference);
                     }
                 }
 
@@ -364,13 +568,28 @@
             {
                 if (!_paused)
                 {
-                    string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                    foreach (IHostIoSubscriber subscriber in _subscribers)
+                    var lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+                    var deadReferences = new List<WeakReference>();
+
+                    foreach (WeakReference reference in _subscribers)
                     {
-                        foreach (string line in lines)
+                        var subscriber = (IHostIoSubscriber)reference.Target;
+                        if (subscriber == null)
                         {
-                            subscriber.WriteWarning(line + "\r\n");
+                            deadReferences.Add(reference);
                         }
+                        else
+                        {
+                            foreach (string line in lines)
+                            {
+                                subscriber.WriteWarning(line + "\r\n");
+                            }
+                        }
+                    }
+
+                    foreach (WeakReference reference in deadReferences)
+                    {
+                        _subscribers.Remove(reference);
                     }
                 }
 
@@ -381,3 +600,6 @@
         #endregion
     }
 }
+
+// ReSharper restore UnusedMember.Global
+// ReSharper restore UnusedMethodReturnValue.Global

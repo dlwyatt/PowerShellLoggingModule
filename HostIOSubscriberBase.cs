@@ -20,8 +20,6 @@ namespace PSLogging {
 
         public virtual void WriteOutput(string message) { }
 
-        public virtual void WriteHost(string message) { }
-
         public virtual void WriteVerbose(string message) { }
 
         public virtual void WriteWarning(string message) { }

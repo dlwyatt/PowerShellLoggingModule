@@ -15,7 +15,9 @@
 	</command:details>
 	<maml:description>
 	<!--This is the Description section-->
-		<maml:para>This cmdlet creates a new LogFile object and attaches it to the current session&apos;s host interceptor, or attaches an existing LogFile object to the interceptor.  All host output in streams specified by the -StreamType parameter is sent to the log file in addition to the console.  Non-blank lines are prepended with the current date and time in a culture-invariant format (Get-Date -Format &apos;r&apos;).  Log file output from the Error, Warning, Verbose and Debug streams are also prepended with [E], [W], [V] and [D], respectively.</maml:para>
+		<maml:para>This cmdlet creates a new LogFile object and attaches it to the current session&apos;s host interceptor, or attaches an existing LogFile object to the interceptor.  When creating a new LogFile, the calling script MUST maintain a reference to the LogFile object in a variable to prevent it from being garbage collected and detached from the interceptor.
+
+All host output in streams specified by the -StreamType parameter is sent to the log file in addition to the console.  Non-blank lines are prepended with the current date and time in a culture-invariant format (Get-Date -Format &apos;r&apos;).  Log file output from the Error, Warning, Verbose and Debug streams are also prepended with [E], [W], [V] and [D], respectively.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
@@ -179,7 +181,7 @@ While not required, it is recommended that the OnError script block disable this
 	<command:details>
 		<command:name>Add-OutputSubscriber</command:name>
 		<maml:description>
-			<maml:para>Attaches a ScriptBlockOutputSubscriber to the current host interceptor.</maml:para>
+			<maml:para>Attaches a ScriptBlockOutputSubscriber to the current host interceptor,  or attaches an existing ScriptBlockOutputSubscriber object to the interceptor.</maml:para>
 		</maml:description>
 		<maml:copyright>
 			<maml:para />
@@ -190,7 +192,9 @@ While not required, it is recommended that the OnError script block disable this
 	</command:details>
 	<maml:description>
 	<!--This is the Description section-->
-		<maml:para>This cmdlet creates a new ScriptBlockOutputSubscriber object and attaches it to the current session&apos;s host interceptor.  Every time a line is written to the console via the Output, Error, Warning, Verbose or Debug streams, the corresponding script block is called.  The script block will be sent a single string argument containing the line to be written (including the trailing &quot;`r`n&quot; characters).
+		<maml:para>This cmdlet creates a new ScriptBlockOutputSubscriber object and attaches it to the current session&apos;s host interceptor, or attaches an existing ScriptBlockOutputSubscriber object to the interceptor.  When creating a new ScriptBlockOutputSubscriber, the calling script MUST maintain a reference to the resulting object in a variable to prevent it from being garbage collected and detached from the interceptor.
+
+Every time a line is written to the console via the Output, Error, Warning, Verbose or Debug streams, the corresponding script block is called.  The script block will be sent a single string argument containing the line to be written (including the trailing &quot;`r`n&quot; characters).
 
 This is a generic implementation of the HostIoInterceptor / HostIoSubscriber classes that allows script writers to develop their own logging logic rather than using the included PSLogFile class.</maml:para>
 	</maml:description>
