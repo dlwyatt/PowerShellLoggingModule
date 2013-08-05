@@ -61,6 +61,20 @@ namespace PSLogging
             }
         }
 
+        private void ReportError(Exception e)
+        {
+            if (ErrorCallback == null) return;
+
+            // ReSharper disable once EmptyGeneralCatchClause
+            try
+            {
+                HostIoInterceptor.GetInterceptor().Paused = true;
+                ErrorCallback.Invoke(new object[] { this, e });
+                HostIoInterceptor.GetInterceptor().Paused = false;
+            }
+            catch { }
+        }
+
         #endregion
 
         #region Public Methods and Operators
@@ -69,152 +83,108 @@ namespace PSLogging
         // IPSOutputSubscriber
         //
 
-        //
-        // I'm not sure yet how best to handle errors here.  I don't want exceptions thrown from these methods,
-        // or we may screw up PowerShell.  Maybe give the class an option to attach ScriptBlock handlers for
-        // error conditions, giving the calling script control over how it wants to handle (or ignore) them.
-        //
-
         public override void WriteDebug(string message)
         {
-            if ((Streams & StreamType.Debug) == StreamType.Debug)
-            {
-                try
-                {
-                    CheckDirectory();
-                    if (message != String.Empty)
-                    {
-                        message = String.Format("{0,-29} - [D] {1}", DateTime.Now.ToString(DateTimeFormat), message);
-                    }
+            if ((Streams & StreamType.Debug) != StreamType.Debug) return;
+            if (message == null) message = String.Empty;
 
-                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
-                }
-                catch (Exception e)
+            try
+            {
+                CheckDirectory();
+                if (message != String.Empty)
                 {
-                    if (ErrorCallback != null)
-                    {
-                        HostIoInterceptor.GetInterceptor().Paused = true;
-                        ErrorCallback.Invoke(new object[] { this, e });
-                        HostIoInterceptor.GetInterceptor().Paused = false;
-                    }
+                    message = String.Format("{0,-29} - [D] {1}", DateTime.Now.ToString(DateTimeFormat), message);
                 }
+
+                File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
+            }
+            catch (Exception e)
+            {
+                ReportError(e);
             }
         }
 
         public override void WriteError(string message)
         {
-            if ((Streams & StreamType.Error) == StreamType.Error)
+            if ((Streams & StreamType.Error) != StreamType.Error) return;
+            if (message == null) message = String.Empty;
+
+            try
             {
-                if (message == null) message = String.Empty;
-
-                try
+                CheckDirectory();
+                if (message.Trim() != String.Empty)
                 {
-                    CheckDirectory();
-                    if (message.Trim() != String.Empty)
-                    {
-                        message = String.Format("{0,-29} - [E] {1}", DateTime.Now.ToString(DateTimeFormat), message);
-                    }
+                    message = String.Format("{0,-29} - [E] {1}", DateTime.Now.ToString(DateTimeFormat), message);
+                }
 
-                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
-                }
-                catch (Exception e)
-                {
-                    if (ErrorCallback != null)
-                    {
-                        HostIoInterceptor.GetInterceptor().Paused = true;
-                        ErrorCallback.Invoke(new object[] { this, e });
-                        HostIoInterceptor.GetInterceptor().Paused = false;
-                    }
-                }
+                File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
+            }
+            catch (Exception e)
+            {
+                ReportError(e);
             }
         }
 
         public override void WriteOutput(string message)
         {
-            if ((Streams & StreamType.Output) == StreamType.Output)
+            if ((Streams & StreamType.Output) != StreamType.Output) return;
+            if (message == null) message = String.Empty;
+
+            try
             {
-                if (message == null) message = String.Empty;
-
-                try
+                CheckDirectory();
+                if (message.Trim() != String.Empty)
                 {
-                    CheckDirectory();
-                    if (message.Trim() != String.Empty)
-                    {
-                        message = String.Format("{0,-29} - {1}", DateTime.Now.ToString(DateTimeFormat), message);
-                    }
+                    message = String.Format("{0,-29} - {1}", DateTime.Now.ToString(DateTimeFormat), message);
+                }
 
-                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
-                }
-                catch (Exception e)
-                {
-                    if (ErrorCallback != null)
-                    {
-                        HostIoInterceptor.GetInterceptor().Paused = true;
-                        ErrorCallback.Invoke(new object[] { this, e });
-                        HostIoInterceptor.GetInterceptor().Paused = false;
-                    }
-                }
+                File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
+            }
+            catch (Exception e)
+            {
+                ReportError(e);
             }
         }
 
         public override void WriteVerbose(string message)
         {
-            if ((Streams & StreamType.Verbose) == StreamType.Verbose)
+            if ((Streams & StreamType.Verbose) != StreamType.Verbose) return;
+            if (message == null) message = String.Empty;
+
+            try
             {
-                if (message == null) message = String.Empty;
-
-                try
+                CheckDirectory();
+                if (message.Trim() != String.Empty)
                 {
-                    CheckDirectory();
-                    if (message.Trim() != String.Empty)
-                    {
-                        message = String.Format("{0,-29} - [V] {1}", DateTime.Now.ToString(DateTimeFormat), message);
-                    }
+                    message = String.Format("{0,-29} - [V] {1}", DateTime.Now.ToString(DateTimeFormat), message);
+                }
 
-                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
-                }
-                catch (Exception e)
-                {
-                    if (ErrorCallback != null)
-                    {
-                        HostIoInterceptor.GetInterceptor().Paused = true;
-                        ErrorCallback.Invoke(new object[] { this, e });
-                        HostIoInterceptor.GetInterceptor().Paused = false;
-                    }
-                }
+                File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
+            }
+            catch (Exception e)
+            {
+                ReportError(e);
             }
         }
 
         public override void WriteWarning(string message)
         {
-            if ((Streams & StreamType.Warning) == StreamType.Warning)
+            if ((Streams & StreamType.Warning) != StreamType.Warning) return;
+            if (message == null) message = String.Empty;
+
+            try
             {
-                if (message == null) message = String.Empty;
-
-                try
+                CheckDirectory();
+                if (message.Trim() != String.Empty)
                 {
-                    CheckDirectory();
-                    if (message.Trim() != String.Empty)
-                    {
-                        message = String.Format("{0,-29} - [W] {1}", DateTime.Now.ToString(DateTimeFormat), message);
-                    }
+                    message = String.Format("{0,-29} - [W] {1}", DateTime.Now.ToString(DateTimeFormat), message);
+                }
 
-                    File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
-                }
-                catch (Exception e)
-                {
-                    if (ErrorCallback != null)
-                    {
-                        try
-                        {
-                            HostIoInterceptor.GetInterceptor().Paused = true;
-                            ErrorCallback.Invoke(new object[] { this, e });
-                            HostIoInterceptor.GetInterceptor().Paused = false;
-                        }
-                        // ReSharper disable once EmptyGeneralCatchClause
-                        catch { }
-                    }
-                }
+                File.AppendAllText(System.IO.Path.Combine(_path, _fileName), message);
+            }
+            catch (Exception e)
+            {
+                ReportError(e);
             }
         }
 
