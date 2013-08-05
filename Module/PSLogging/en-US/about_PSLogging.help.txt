@@ -76,6 +76,17 @@ LONG DESCRIPTION
           Resume-Logging             Resumes interceptor-to-subscriber calls.
  
   Notes
+      When creating new references to LogFile or OutputSubscriber objects, the calling script
+      must maintain a reference to the resulting objects for as long as they intend the subscriber
+      to remain active.  As soon as the script releases the reference (either intentionally, or
+      due to the variable falling out of scope), the subscriber object becomes eligible for garbage
+      collection, and will be detached within a short time.
+      
+      This is to make sure that subscribers don't remain active for an entire PowerShell session
+      by mistake, if a script author forgets to call Disable-LogFile / Disable-OutputSubscriber,
+      or if the script crashes before that cleanup code can be called.  It is still possible for
+      such objects to remain active after a script ends, if the script author chooses to place
+      those variables in the Global scope.
       
       This logging technique creates certain "circular reference" style situations which may
       cause infinite output to either the console, or worse, to a log file.  For example,
