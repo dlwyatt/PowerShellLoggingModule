@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
 using System.Management.Automation.Host;
+using System.Reflection;
 using System.Security;
 using System.Text;
 
@@ -46,6 +47,48 @@ namespace PSLogging
             _psInterface = null;
             _subscribers = new List<WeakReference>();
             _writeCache = new StringBuilder();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void SendToSubscribers(string methodName, params object[] args)
+        {
+            // Refactored the duplicate code that enumerates the _subscribers list and removes dead
+            // references in to this method.  It uses Reflection to invoke the methods on
+            // subscriber objects because I'm not sure how to accomplish the same thing using
+            // delegates (assuming it is even possible), when the target methods have different
+            // signatures, and the caller doesn't know which objects the target methods will be
+            // invoked on, if any.
+
+            if (_paused) return;
+
+            MethodInfo method = typeof(IHostIoSubscriber).GetMethod(methodName);
+            if (method == null)
+            {
+                throw new ArgumentException("Method '" + methodName + "' does not exist in the IHostIoSubscriber interface.", "methodName");
+            }
+
+            var deadReferences = new List<WeakReference>();
+
+            foreach (WeakReference reference in _subscribers)
+            {
+                var subscriber = (IHostIoSubscriber)reference.Target;
+                if (subscriber == null)
+                {
+                    deadReferences.Add(reference);
+                }
+                else
+                {
+                    method.Invoke(subscriber, args);
+                }
+            }
+
+            foreach (WeakReference reference in deadReferences)
+            {
+                _subscribers.Remove(reference);
+            }
         }
 
         #endregion
@@ -120,31 +163,10 @@ namespace PSLogging
             string caption, string message, Collection<FieldDescription> descriptions)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-
+            
             var result = _psInterface.Prompt(caption, message, descriptions);
-
-            if (!_paused)
-            {
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        subscriber.Prompt(result);
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
-            }
+            
+            SendToSubscribers("Prompt", result);
 
             return result;
         }
@@ -156,28 +178,7 @@ namespace PSLogging
 
             var result = _psInterface.PromptForChoice(caption, message, choices, defaultChoice);
 
-            if (!_paused)
-            {
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        subscriber.ChoicePrompt(choices[result]);
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
-            }
+            SendToSubscribers("ChoicePrompt", choices[result]);
 
             return result;
         }
@@ -189,28 +190,7 @@ namespace PSLogging
 
             var result = _psInterface.PromptForCredential(caption, message, userName, targetName);
 
-            if (!_paused)
-            {
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        subscriber.CredentialPrompt(result);
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
-            }
+            SendToSubscribers("CredentialPrompt", result);
 
             return result;
         }
@@ -228,28 +208,7 @@ namespace PSLogging
             var result = _psInterface.PromptForCredential(
                 caption, message, userName, targetName, allowedCredentialTypes, options);
 
-            if (!_paused)
-            {
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        subscriber.CredentialPrompt(result);
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
-            }
+            SendToSubscribers("CredentialPrompt", result);
 
             return result;
         }
@@ -260,28 +219,7 @@ namespace PSLogging
 
             var result = _psInterface.ReadLine();
 
-            if (!_paused)
-            {
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        subscriber.ReadFromHost(result);
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
-            }
+            SendToSubscribers("ReadFromHost", result);
 
             return result;
         }
@@ -289,12 +227,14 @@ namespace PSLogging
         public override SecureString ReadLineAsSecureString()
         {
             if (_psInterface == null) throw new InvalidOperationException();
+            
             return _psInterface.ReadLineAsSecureString();
         }
 
         public override void Write(string value)
         {
             if (_psInterface == null) throw new InvalidOperationException();
+            
             _psInterface.Write(value);
 
             if (!_paused)
@@ -306,6 +246,7 @@ namespace PSLogging
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
             if (_psInterface == null) throw new InvalidOperationException();
+            
             _psInterface.Write(foregroundColor, backgroundColor, value);
 
             if (!_paused)
@@ -317,31 +258,11 @@ namespace PSLogging
         public override void WriteDebugLine(string message)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            if (!_paused)
+            string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+
+            foreach (string line in lines)
             {
-                string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        foreach (string line in lines)
-                        {
-                            subscriber.WriteDebug(line + "\r\n");
-                        }
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
+                SendToSubscribers("WriteDebug", line.TrimEnd() + "\r\n");
             }
 
             _psInterface.WriteDebugLine(message);
@@ -350,31 +271,11 @@ namespace PSLogging
         public override void WriteErrorLine(string message)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            if (!_paused)
+
+            string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            foreach (string line in lines)
             {
-                string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        foreach (string line in lines)
-                        {
-                            subscriber.WriteError(line + "\r\n");
-                        }
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
+                SendToSubscribers("WriteError", line.TrimEnd() + "\r\n");
             }
 
             _psInterface.WriteErrorLine(message);
@@ -383,31 +284,11 @@ namespace PSLogging
         public override void WriteLine()
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            if (!_paused)
+            
+            string[] lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            foreach (string line in lines)
             {
-                string[] lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        foreach (string line in lines)
-                        {
-                            subscriber.WriteOutput(line + "\r\n");
-                        }
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
+                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
             }
 
             _writeCache.Length = 0;
@@ -417,31 +298,11 @@ namespace PSLogging
         public override void WriteLine(string value)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            if (!_paused)
+
+            string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            foreach (string line in lines)
             {
-                string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        foreach (string line in lines)
-                        {
-                            subscriber.WriteOutput(line + "\r\n");
-                        }
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
+                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
             }
 
             _writeCache.Length = 0;
@@ -451,31 +312,11 @@ namespace PSLogging
         public override void WriteLine(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            if (!_paused)
+
+            string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            foreach (string line in lines)
             {
-                string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        foreach (string line in lines)
-                        {
-                            subscriber.WriteOutput(line + "\r\n");
-                        }
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
+                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
             }
 
             _writeCache.Length = 0;
@@ -485,28 +326,8 @@ namespace PSLogging
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            if (!_paused)
-            {
-                var deadReferences = new List<WeakReference>();
 
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        subscriber.WriteProgress(sourceId, record);
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
-            }
+            SendToSubscribers("WriteProgress", sourceId, record);
 
             _psInterface.WriteProgress(sourceId, record);
         }
@@ -514,31 +335,11 @@ namespace PSLogging
         public override void WriteVerboseLine(string message)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            if (!_paused)
+
+            string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            foreach (string line in lines)
             {
-                string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        foreach (string line in lines)
-                        {
-                            subscriber.WriteVerbose(line + "\r\n");
-                        }
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
+                SendToSubscribers("WriteVerbose", line.TrimEnd() + "\r\n");
             }
 
             _psInterface.WriteVerboseLine(message);
@@ -547,31 +348,11 @@ namespace PSLogging
         public override void WriteWarningLine(string message)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            if (!_paused)
+
+            string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            foreach (string line in lines)
             {
-                string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-                var deadReferences = new List<WeakReference>();
-
-                foreach (WeakReference reference in _subscribers)
-                {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber == null)
-                    {
-                        deadReferences.Add(reference);
-                    }
-                    else
-                    {
-                        foreach (string line in lines)
-                        {
-                            subscriber.WriteWarning(line + "\r\n");
-                        }
-                    }
-                }
-
-                foreach (WeakReference reference in deadReferences)
-                {
-                    _subscribers.Remove(reference);
-                }
+                SendToSubscribers("WriteWarning", line.TrimEnd() + "\r\n");
             }
 
             _psInterface.WriteWarningLine(message);
