@@ -16,7 +16,7 @@ namespace PSLogging
     {
         #region Static Fields
 
-        private readonly static HostIoInterceptor Instance = new HostIoInterceptor();
+        private static readonly HostIoInterceptor Instance = new HostIoInterceptor();
 
         #endregion
 
@@ -31,10 +31,10 @@ namespace PSLogging
 
         #region Fields
 
-        private PSHostUserInterface _psInterface;
         private readonly List<WeakReference> _subscribers;
         private readonly StringBuilder _writeCache;
         private bool _paused;
+        private PSHostUserInterface _psInterface;
 
         #endregion
 
@@ -60,19 +60,24 @@ namespace PSLogging
             // delegates (assuming it is even possible), when the target methods have different
             // signatures.
 
-            if (_paused) return;
+            if (_paused)
+            {
+                return;
+            }
 
-            MethodInfo method = typeof(IHostIoSubscriber).GetMethod(methodName);
+            MethodInfo method = typeof (IHostIoSubscriber).GetMethod(methodName);
             if (method == null)
             {
-                throw new ArgumentException("Method '" + methodName + "' does not exist in the IHostIoSubscriber interface.", "methodName");
+                throw new ArgumentException(
+                    "Method '" + methodName + "' does not exist in the IHostIoSubscriber interface.",
+                    "methodName");
             }
 
             var deadReferences = new List<WeakReference>();
 
             foreach (WeakReference reference in _subscribers)
             {
-                var subscriber = (IHostIoSubscriber)reference.Target;
+                var subscriber = (IHostIoSubscriber) reference.Target;
                 if (subscriber == null)
                 {
                     deadReferences.Add(reference);
@@ -102,7 +107,13 @@ namespace PSLogging
         public PSHostUserInterface HostUi
         {
             get { return _psInterface; }
-            set { if (value != null && value != _psInterface) _psInterface = value; }
+            set
+            {
+                if (value != null && value != _psInterface)
+                {
+                    _psInterface = value;
+                }
+            }
         }
 
         public IEnumerable<IHostIoSubscriber> Subscribers
@@ -111,8 +122,11 @@ namespace PSLogging
             {
                 foreach (WeakReference reference in _subscribers)
                 {
-                    var subscriber = (IHostIoSubscriber)reference.Target;
-                    if (subscriber != null) yield return subscriber;
+                    var subscriber = (IHostIoSubscriber) reference.Target;
+                    if (subscriber != null)
+                    {
+                        yield return subscriber;
+                    }
                 }
             }
         }
@@ -145,7 +159,10 @@ namespace PSLogging
 
             foreach (WeakReference reference in _subscribers)
             {
-                if (reference.Target == subscriber) matches.Add(reference);
+                if (reference.Target == subscriber)
+                {
+                    matches.Add(reference);
+                }
             }
 
             foreach (WeakReference reference in matches)
@@ -154,54 +171,74 @@ namespace PSLogging
             }
         }
 
-        public override Dictionary<string, PSObject> Prompt(
-            string caption, string message, Collection<FieldDescription> descriptions)
+        public override Dictionary<string, PSObject> Prompt(string caption,
+                                                            string message,
+                                                            Collection<FieldDescription> descriptions)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
-            var result = _psInterface.Prompt(caption, message, descriptions);
+            Dictionary<string, PSObject> result = _psInterface.Prompt(caption, message, descriptions);
 
             SendToSubscribers("Prompt", result);
 
             return result;
         }
 
-        public override int PromptForChoice(
-            string caption, string message, Collection<ChoiceDescription> choices, int defaultChoice)
+        public override int PromptForChoice(string caption,
+                                            string message,
+                                            Collection<ChoiceDescription> choices,
+                                            int defaultChoice)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
-            var result = _psInterface.PromptForChoice(caption, message, choices, defaultChoice);
+            int result = _psInterface.PromptForChoice(caption, message, choices, defaultChoice);
 
             SendToSubscribers("ChoicePrompt", choices[result]);
 
             return result;
         }
 
-        public override PSCredential PromptForCredential(
-            string caption, string message, string userName, string targetName)
+        public override PSCredential PromptForCredential(string caption,
+                                                         string message,
+                                                         string userName,
+                                                         string targetName)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
-            var result = _psInterface.PromptForCredential(caption, message, userName, targetName);
+            PSCredential result = _psInterface.PromptForCredential(caption, message, userName, targetName);
 
             SendToSubscribers("CredentialPrompt", result);
 
             return result;
         }
 
-        public override PSCredential PromptForCredential(
-            string caption,
-            string message,
-            string userName,
-            string targetName,
-            PSCredentialTypes allowedCredentialTypes,
-            PSCredentialUIOptions options)
+        public override PSCredential PromptForCredential(string caption,
+                                                         string message,
+                                                         string userName,
+                                                         string targetName,
+                                                         PSCredentialTypes allowedCredentialTypes,
+                                                         PSCredentialUIOptions options)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
-            var result = _psInterface.PromptForCredential(
-                caption, message, userName, targetName, allowedCredentialTypes, options);
+            PSCredential result = _psInterface.PromptForCredential(caption,
+                                                                   message,
+                                                                   userName,
+                                                                   targetName,
+                                                                   allowedCredentialTypes,
+                                                                   options);
 
             SendToSubscribers("CredentialPrompt", result);
 
@@ -210,9 +247,12 @@ namespace PSLogging
 
         public override string ReadLine()
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
-            var result = _psInterface.ReadLine();
+            string result = _psInterface.ReadLine();
 
             SendToSubscribers("ReadFromHost", result);
 
@@ -221,14 +261,20 @@ namespace PSLogging
 
         public override SecureString ReadLineAsSecureString()
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             return _psInterface.ReadLineAsSecureString();
         }
 
         public override void Write(string value)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             _psInterface.Write(value);
 
@@ -240,7 +286,10 @@ namespace PSLogging
 
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             _psInterface.Write(foregroundColor, backgroundColor, value);
 
@@ -252,7 +301,10 @@ namespace PSLogging
 
         public override void WriteDebugLine(string message)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
@@ -265,7 +317,10 @@ namespace PSLogging
 
         public override void WriteErrorLine(string message)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
@@ -278,7 +333,10 @@ namespace PSLogging
 
         public override void WriteLine()
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             string[] lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
@@ -292,7 +350,10 @@ namespace PSLogging
 
         public override void WriteLine(string value)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
@@ -306,7 +367,10 @@ namespace PSLogging
 
         public override void WriteLine(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
@@ -320,7 +384,10 @@ namespace PSLogging
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             SendToSubscribers("WriteProgress", sourceId, record);
 
@@ -329,7 +396,10 @@ namespace PSLogging
 
         public override void WriteVerboseLine(string message)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
@@ -342,7 +412,10 @@ namespace PSLogging
 
         public override void WriteWarningLine(string message)
         {
-            if (_psInterface == null) throw new InvalidOperationException();
+            if (_psInterface == null)
+            {
+                throw new InvalidOperationException();
+            }
 
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)

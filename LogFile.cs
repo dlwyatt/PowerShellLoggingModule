@@ -7,7 +7,6 @@ using System.Management.Automation;
 
 namespace PSLogging
 {
-
     public class LogFile : HostIoSubscriberBase
     {
         #region Constants
@@ -27,10 +26,7 @@ namespace PSLogging
 
         public string Path
         {
-            get
-            {
-                return System.IO.Path.Combine(_path, _fileName);
-            }
+            get { return System.IO.Path.Combine(_path, _fileName); }
         }
 
         public StreamType Streams { get; set; }
@@ -63,7 +59,10 @@ namespace PSLogging
 
         private void ReportError(Exception e)
         {
-            if (ErrorCallback == null) return;
+            if (ErrorCallback == null)
+            {
+                return;
+            }
 
             // ReSharper disable once EmptyGeneralCatchClause
             try
@@ -72,7 +71,7 @@ namespace PSLogging
                 ErrorCallback.Invoke(new object[] { this, e });
                 HostIoInterceptor.GetInterceptor().Paused = false;
             }
-            catch { }
+            catch {}
         }
 
         #endregion
@@ -85,8 +84,14 @@ namespace PSLogging
 
         public override void WriteDebug(string message)
         {
-            if ((Streams & StreamType.Debug) != StreamType.Debug) return;
-            if (message == null) message = String.Empty;
+            if ((Streams & StreamType.Debug) != StreamType.Debug)
+            {
+                return;
+            }
+            if (message == null)
+            {
+                message = String.Empty;
+            }
 
             try
             {
@@ -106,8 +111,14 @@ namespace PSLogging
 
         public override void WriteError(string message)
         {
-            if ((Streams & StreamType.Error) != StreamType.Error) return;
-            if (message == null) message = String.Empty;
+            if ((Streams & StreamType.Error) != StreamType.Error)
+            {
+                return;
+            }
+            if (message == null)
+            {
+                message = String.Empty;
+            }
 
             try
             {
@@ -127,8 +138,14 @@ namespace PSLogging
 
         public override void WriteOutput(string message)
         {
-            if ((Streams & StreamType.Output) != StreamType.Output) return;
-            if (message == null) message = String.Empty;
+            if ((Streams & StreamType.Output) != StreamType.Output)
+            {
+                return;
+            }
+            if (message == null)
+            {
+                message = String.Empty;
+            }
 
             try
             {
@@ -148,8 +165,14 @@ namespace PSLogging
 
         public override void WriteVerbose(string message)
         {
-            if ((Streams & StreamType.Verbose) != StreamType.Verbose) return;
-            if (message == null) message = String.Empty;
+            if ((Streams & StreamType.Verbose) != StreamType.Verbose)
+            {
+                return;
+            }
+            if (message == null)
+            {
+                message = String.Empty;
+            }
 
             try
             {
@@ -169,8 +192,14 @@ namespace PSLogging
 
         public override void WriteWarning(string message)
         {
-            if ((Streams & StreamType.Warning) != StreamType.Warning) return;
-            if (message == null) message = String.Empty;
+            if ((Streams & StreamType.Warning) != StreamType.Warning)
+            {
+                return;
+            }
+            if (message == null)
+            {
+                message = String.Empty;
+            }
 
             try
             {

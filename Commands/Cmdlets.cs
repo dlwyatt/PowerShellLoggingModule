@@ -9,19 +9,25 @@ namespace PSLogging.Commands
     [Cmdlet(VerbsCommon.Add, "LogFile")]
     public class AddLogFileCommand : PSCmdlet
     {
-        private StreamType _streams = StreamType.All;
         private ScriptBlock _errorCallback;
-        private string _path;
         private LogFile _inputObject;
+        private string _path;
+        private StreamType _streams = StreamType.All;
 
         #region Parameters
+
         [Parameter(Mandatory = true,
                    Position = 0,
                    ParameterSetName = "New")]
         public string Path
         {
             get { return _path; }
-            set { _path = System.IO.Path.IsPathRooted(value) ? value : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value); }
+            set
+            {
+                _path = System.IO.Path.IsPathRooted(value)
+                            ? value
+                            : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
+            }
         }
 
         [Parameter(ParameterSetName = "New")]
@@ -83,7 +89,9 @@ namespace PSLogging.Commands
             get { return _path; }
             set
             {
-                _path = System.IO.Path.IsPathRooted(value) ? value : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
+                _path = System.IO.Path.IsPathRooted(value)
+                            ? value
+                            : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
             }
         }
 
@@ -93,7 +101,8 @@ namespace PSLogging.Commands
             {
                 var logFile = subscriber as LogFile;
 
-                if (logFile != null && (_path == null || System.IO.Path.GetFullPath(logFile.Path) == System.IO.Path.GetFullPath(_path)))
+                if (logFile != null &&
+                    (_path == null || System.IO.Path.GetFullPath(logFile.Path) == System.IO.Path.GetFullPath(_path)))
                 {
                     WriteObject(logFile);
                 }
@@ -136,15 +145,15 @@ namespace PSLogging.Commands
     [Cmdlet(VerbsCommon.Add, "OutputSubscriber")]
     public class AddOutputSubscriberCommand : PSCmdlet
     {
-        private ScriptBlock _onWriteOutput;
+        private ScriptBlockOutputSubscriber _inputObject;
         private ScriptBlock _onWriteDebug;
-        private ScriptBlock _onWriteVerbose;
         private ScriptBlock _onWriteError;
+        private ScriptBlock _onWriteOutput;
+        private ScriptBlock _onWriteVerbose;
         private ScriptBlock _onWriteWarning;
 
-        private ScriptBlockOutputSubscriber _inputObject;
-
         #region Parameters
+
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteOutput
         {
@@ -189,6 +198,7 @@ namespace PSLogging.Commands
             get { return _inputObject; }
             set { _inputObject = value; }
         }
+
         #endregion
 
         protected override void EndProcessing()
@@ -197,7 +207,11 @@ namespace PSLogging.Commands
 
             if (ParameterSetName == "New")
             {
-                subscriber = new ScriptBlockOutputSubscriber(_onWriteOutput, _onWriteDebug, _onWriteVerbose, _onWriteError, _onWriteWarning);
+                subscriber = new ScriptBlockOutputSubscriber(_onWriteOutput,
+                                                             _onWriteDebug,
+                                                             _onWriteVerbose,
+                                                             _onWriteError,
+                                                             _onWriteWarning);
                 WriteObject(subscriber);
             }
             else
@@ -217,7 +231,10 @@ namespace PSLogging.Commands
             foreach (IHostIoSubscriber subscriber in HostIoInterceptor.GetInterceptor().Subscribers)
             {
                 var scriptBlockSubscriber = subscriber as ScriptBlockOutputSubscriber;
-                if (scriptBlockSubscriber != null) WriteObject(scriptBlockSubscriber);
+                if (scriptBlockSubscriber != null)
+                {
+                    WriteObject(scriptBlockSubscriber);
+                }
             }
         }
     } // End GetOutputSubscriberCommand class
