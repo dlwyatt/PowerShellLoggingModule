@@ -32,10 +32,8 @@ namespace PSLogging
         #region Fields
 
         private PSHostUserInterface _psInterface;
-
         private readonly List<WeakReference> _subscribers;
         private readonly StringBuilder _writeCache;
-
         private bool _paused;
 
         #endregion
@@ -47,6 +45,7 @@ namespace PSLogging
             _psInterface = null;
             _subscribers = new List<WeakReference>();
             _writeCache = new StringBuilder();
+            _paused = false;
         }
 
         #endregion
@@ -59,8 +58,7 @@ namespace PSLogging
             // references in to this method.  It uses Reflection to invoke the methods on
             // subscriber objects because I'm not sure how to accomplish the same thing using
             // delegates (assuming it is even possible), when the target methods have different
-            // signatures, and the caller doesn't know which objects the target methods will be
-            // invoked on, if any.
+            // signatures.
 
             if (_paused) return;
 
@@ -121,10 +119,7 @@ namespace PSLogging
 
         public override PSHostRawUserInterface RawUI
         {
-            get
-            {
-                return _psInterface.RawUI;
-            }
+            get { return _psInterface.RawUI; }
         }
 
         #endregion
@@ -163,9 +158,9 @@ namespace PSLogging
             string caption, string message, Collection<FieldDescription> descriptions)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            
+
             var result = _psInterface.Prompt(caption, message, descriptions);
-            
+
             SendToSubscribers("Prompt", result);
 
             return result;
@@ -227,14 +222,14 @@ namespace PSLogging
         public override SecureString ReadLineAsSecureString()
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            
+
             return _psInterface.ReadLineAsSecureString();
         }
 
         public override void Write(string value)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            
+
             _psInterface.Write(value);
 
             if (!_paused)
@@ -246,7 +241,7 @@ namespace PSLogging
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            
+
             _psInterface.Write(foregroundColor, backgroundColor, value);
 
             if (!_paused)
@@ -258,8 +253,8 @@ namespace PSLogging
         public override void WriteDebugLine(string message)
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
 
+            string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
                 SendToSubscribers("WriteDebug", line.TrimEnd() + "\r\n");
@@ -284,7 +279,7 @@ namespace PSLogging
         public override void WriteLine()
         {
             if (_psInterface == null) throw new InvalidOperationException();
-            
+
             string[] lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {

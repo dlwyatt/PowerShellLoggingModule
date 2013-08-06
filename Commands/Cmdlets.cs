@@ -21,11 +21,7 @@ namespace PSLogging.Commands
         public string Path
         {
             get { return _path; }
-
-            set
-            {
-                _path = System.IO.Path.IsPathRooted(value) ? value : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
-            }
+            set { _path = System.IO.Path.IsPathRooted(value) ? value : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value); }
         }
 
         [Parameter(ParameterSetName = "New")]
@@ -56,8 +52,6 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
-
             LogFile logFile;
 
             if (ParameterSetName == "New")
@@ -70,7 +64,7 @@ namespace PSLogging.Commands
                 logFile = _inputObject;
             }
 
-            interceptor.AddSubscriber(logFile);
+            HostIoInterceptor.GetInterceptor().AddSubscriber(logFile);
         }
     } // End AddLogFileCommand class
 
@@ -95,9 +89,7 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
-
-            foreach (IHostIoSubscriber subscriber in interceptor.Subscribers)
+            foreach (IHostIoSubscriber subscriber in HostIoInterceptor.GetInterceptor().Subscribers)
             {
                 var logFile = subscriber as LogFile;
 
@@ -119,8 +111,7 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
-            interceptor.RemoveSubscriber(InputObject);
+            HostIoInterceptor.GetInterceptor().RemoveSubscriber(InputObject);
         }
     } // End DisableLogFileCommand class
 
@@ -129,8 +120,7 @@ namespace PSLogging.Commands
     {
         protected override void EndProcessing()
         {
-            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
-            interceptor.Paused = true;
+            HostIoInterceptor.GetInterceptor().Paused = true;
         }
     } // End SuspendLoggingCommand class
 
@@ -139,8 +129,7 @@ namespace PSLogging.Commands
     {
         protected override void EndProcessing()
         {
-            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
-            interceptor.Paused = false;
+            HostIoInterceptor.GetInterceptor().Paused = false;
         }
     } // End ResumeLoggingCommand class
 
@@ -204,8 +193,6 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
-
             ScriptBlockOutputSubscriber subscriber;
 
             if (ParameterSetName == "New")
@@ -218,7 +205,7 @@ namespace PSLogging.Commands
                 subscriber = _inputObject;
             }
 
-            interceptor.AddSubscriber(subscriber);
+            HostIoInterceptor.GetInterceptor().AddSubscriber(subscriber);
         }
     } // End AddOutputSubscriberCommand class
 
@@ -227,9 +214,7 @@ namespace PSLogging.Commands
     {
         protected override void EndProcessing()
         {
-            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
-
-            foreach (IHostIoSubscriber subscriber in interceptor.Subscribers)
+            foreach (IHostIoSubscriber subscriber in HostIoInterceptor.GetInterceptor().Subscribers)
             {
                 var scriptBlockSubscriber = subscriber as ScriptBlockOutputSubscriber;
                 if (scriptBlockSubscriber != null) WriteObject(scriptBlockSubscriber);
@@ -247,8 +232,7 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIoInterceptor interceptor = HostIoInterceptor.GetInterceptor();
-            interceptor.RemoveSubscriber(InputObject);
+            HostIoInterceptor.GetInterceptor().RemoveSubscriber(InputObject);
         }
     } // End DisableOutputSubscriberCommand class
 }

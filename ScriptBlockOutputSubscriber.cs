@@ -33,27 +33,27 @@ namespace PSLogging
 
         public override void WriteDebug(string message)
         {
-            if (OnWriteDebug != null) OnWriteDebug.Invoke(new object[] { message });
+            if (OnWriteDebug != null) OnWriteDebug.Invoke(message);
         }
 
         public override void WriteOutput(string message)
         {
-            if (OnWriteOutput != null) OnWriteOutput.Invoke(new object[] { message });
+            if (OnWriteOutput != null) OnWriteOutput.Invoke(message);
         }
 
         public override void WriteError(string message)
         {
-            if (OnWriteError != null) OnWriteError.Invoke(new object[] { message });
+            if (OnWriteError != null) OnWriteError.Invoke(message);
         }
 
         public override void WriteVerbose(string message)
         {
-            if (OnWriteVerbose != null) OnWriteVerbose.Invoke(new object[] { message });
+            if (OnWriteVerbose != null) OnWriteVerbose.Invoke(message);
         }
 
         public override void WriteWarning(string message)
         {
-            if (OnWriteWarning != null) OnWriteWarning.Invoke(new object[] { message });
+            if (OnWriteWarning != null) OnWriteWarning.Invoke(message);
         }
     }
 }
