@@ -13,11 +13,11 @@ namespace PSLogging
                                            ScriptBlock onWriteError,
                                            ScriptBlock onWriteWarning)
         {
-            OnWriteOutput = onWriteOutput;
-            OnWriteDebug = onWriteDebug;
-            OnWriteVerbose = onWriteVerbose;
-            OnWriteError = onWriteError;
-            OnWriteWarning = onWriteWarning;
+            this.OnWriteOutput = onWriteOutput;
+            this.OnWriteDebug = onWriteDebug;
+            this.OnWriteVerbose = onWriteVerbose;
+            this.OnWriteError = onWriteError;
+            this.OnWriteWarning = onWriteWarning;
         }
 
         public ScriptBlockOutputSubscriber() : this(null, null, null, null, null) {}
@@ -30,41 +30,41 @@ namespace PSLogging
 
         public override void WriteDebug(string message)
         {
-            if (OnWriteDebug != null)
+            if (this.OnWriteDebug != null)
             {
-                OnWriteDebug.Invoke(message);
+                this.OnWriteDebug.Invoke(message);
             }
         }
 
         public override void WriteOutput(string message)
         {
-            if (OnWriteOutput != null)
+            if (this.OnWriteOutput != null)
             {
-                OnWriteOutput.Invoke(message);
+                this.OnWriteOutput.Invoke(message);
             }
         }
 
         public override void WriteError(string message)
         {
-            if (OnWriteError != null)
+            if (this.OnWriteError != null)
             {
-                OnWriteError.Invoke(message);
+                this.OnWriteError.Invoke(message);
             }
         }
 
         public override void WriteVerbose(string message)
         {
-            if (OnWriteVerbose != null)
+            if (this.OnWriteVerbose != null)
             {
-                OnWriteVerbose.Invoke(message);
+                this.OnWriteVerbose.Invoke(message);
             }
         }
 
         public override void WriteWarning(string message)
         {
-            if (OnWriteWarning != null)
+            if (this.OnWriteWarning != null)
             {
-                OnWriteWarning.Invoke(message);
+                this.OnWriteWarning.Invoke(message);
             }
         }
     }

@@ -31,10 +31,10 @@ namespace PSLogging
 
         #region Fields
 
-        private readonly List<WeakReference> _subscribers;
-        private readonly StringBuilder _writeCache;
-        private bool _paused;
-        private PSHostUserInterface _psInterface;
+        private readonly List<WeakReference> subscribers;
+        private readonly StringBuilder writeCache;
+        private bool paused;
+        private PSHostUserInterface psInterface;
 
         #endregion
 
@@ -42,10 +42,10 @@ namespace PSLogging
 
         private HostIoInterceptor()
         {
-            _psInterface = null;
-            _subscribers = new List<WeakReference>();
-            _writeCache = new StringBuilder();
-            _paused = false;
+            this.psInterface = null;
+            this.subscribers = new List<WeakReference>();
+            this.writeCache = new StringBuilder();
+            this.paused = false;
         }
 
         #endregion
@@ -60,7 +60,7 @@ namespace PSLogging
             // delegates (assuming it is even possible), when the target methods have different
             // signatures.
 
-            if (_paused)
+            if (this.paused)
             {
                 return;
             }
@@ -75,7 +75,7 @@ namespace PSLogging
 
             var deadReferences = new List<WeakReference>();
 
-            foreach (WeakReference reference in _subscribers)
+            foreach (WeakReference reference in this.subscribers)
             {
                 var subscriber = (IHostIoSubscriber) reference.Target;
                 if (subscriber == null)
@@ -90,7 +90,7 @@ namespace PSLogging
 
             foreach (WeakReference reference in deadReferences)
             {
-                _subscribers.Remove(reference);
+                this.subscribers.Remove(reference);
             }
         }
 
@@ -100,18 +100,18 @@ namespace PSLogging
 
         public bool Paused
         {
-            get { return _paused; }
-            set { _paused = value; }
+            get { return this.paused; }
+            set { this.paused = value; }
         }
 
         public PSHostUserInterface HostUi
         {
-            get { return _psInterface; }
+            get { return this.psInterface; }
             set
             {
-                if (value != null && value != _psInterface)
+                if (value != null && value != this.psInterface)
                 {
-                    _psInterface = value;
+                    this.psInterface = value;
                 }
             }
         }
@@ -120,7 +120,7 @@ namespace PSLogging
         {
             get
             {
-                foreach (WeakReference reference in _subscribers)
+                foreach (WeakReference reference in this.subscribers)
                 {
                     var subscriber = (IHostIoSubscriber) reference.Target;
                     if (subscriber != null)
@@ -133,7 +133,7 @@ namespace PSLogging
 
         public override PSHostRawUserInterface RawUI
         {
-            get { return _psInterface.RawUI; }
+            get { return this.psInterface.RawUI; }
         }
 
         #endregion
@@ -142,7 +142,7 @@ namespace PSLogging
 
         public void AddSubscriber(IHostIoSubscriber subscriber)
         {
-            foreach (WeakReference reference in _subscribers)
+            foreach (WeakReference reference in this.subscribers)
             {
                 if (reference.Target == subscriber)
                 {
@@ -150,14 +150,14 @@ namespace PSLogging
                 }
             }
 
-            _subscribers.Add(new WeakReference(subscriber));
+            this.subscribers.Add(new WeakReference(subscriber));
         }
 
         public void RemoveSubscriber(IHostIoSubscriber subscriber)
         {
             var matches = new List<WeakReference>();
 
-            foreach (WeakReference reference in _subscribers)
+            foreach (WeakReference reference in this.subscribers)
             {
                 if (reference.Target == subscriber)
                 {
@@ -167,7 +167,7 @@ namespace PSLogging
 
             foreach (WeakReference reference in matches)
             {
-                _subscribers.Remove(reference);
+                this.subscribers.Remove(reference);
             }
         }
 
@@ -175,14 +175,14 @@ namespace PSLogging
                                                             string message,
                                                             Collection<FieldDescription> descriptions)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            Dictionary<string, PSObject> result = _psInterface.Prompt(caption, message, descriptions);
+            Dictionary<string, PSObject> result = this.psInterface.Prompt(caption, message, descriptions);
 
-            SendToSubscribers("Prompt", result);
+            this.SendToSubscribers("Prompt", result);
 
             return result;
         }
@@ -192,14 +192,14 @@ namespace PSLogging
                                             Collection<ChoiceDescription> choices,
                                             int defaultChoice)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            int result = _psInterface.PromptForChoice(caption, message, choices, defaultChoice);
+            int result = this.psInterface.PromptForChoice(caption, message, choices, defaultChoice);
 
-            SendToSubscribers("ChoicePrompt", choices[result]);
+            this.SendToSubscribers("ChoicePrompt", choices[result]);
 
             return result;
         }
@@ -209,14 +209,14 @@ namespace PSLogging
                                                          string userName,
                                                          string targetName)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            PSCredential result = _psInterface.PromptForCredential(caption, message, userName, targetName);
+            PSCredential result = this.psInterface.PromptForCredential(caption, message, userName, targetName);
 
-            SendToSubscribers("CredentialPrompt", result);
+            this.SendToSubscribers("CredentialPrompt", result);
 
             return result;
         }
@@ -228,80 +228,80 @@ namespace PSLogging
                                                          PSCredentialTypes allowedCredentialTypes,
                                                          PSCredentialUIOptions options)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            PSCredential result = _psInterface.PromptForCredential(caption,
-                                                                   message,
-                                                                   userName,
-                                                                   targetName,
-                                                                   allowedCredentialTypes,
-                                                                   options);
+            PSCredential result = this.psInterface.PromptForCredential(caption,
+                                                                       message,
+                                                                       userName,
+                                                                       targetName,
+                                                                       allowedCredentialTypes,
+                                                                       options);
 
-            SendToSubscribers("CredentialPrompt", result);
+            this.SendToSubscribers("CredentialPrompt", result);
 
             return result;
         }
 
         public override string ReadLine()
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            string result = _psInterface.ReadLine();
+            string result = this.psInterface.ReadLine();
 
-            SendToSubscribers("ReadFromHost", result);
+            this.SendToSubscribers("ReadFromHost", result);
 
             return result;
         }
 
         public override SecureString ReadLineAsSecureString()
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            return _psInterface.ReadLineAsSecureString();
+            return this.psInterface.ReadLineAsSecureString();
         }
 
         public override void Write(string value)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            _psInterface.Write(value);
+            this.psInterface.Write(value);
 
-            if (!_paused)
+            if (!this.paused)
             {
-                _writeCache.Append(value);
+                this.writeCache.Append(value);
             }
         }
 
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            _psInterface.Write(foregroundColor, backgroundColor, value);
+            this.psInterface.Write(foregroundColor, backgroundColor, value);
 
-            if (!_paused)
+            if (!this.paused)
             {
-                _writeCache.Append(value);
+                this.writeCache.Append(value);
             }
         }
 
         public override void WriteDebugLine(string message)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
@@ -309,15 +309,15 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteDebug", line.TrimEnd() + "\r\n");
+                this.SendToSubscribers("WriteDebug", line.TrimEnd() + "\r\n");
             }
 
-            _psInterface.WriteDebugLine(message);
+            this.psInterface.WriteDebugLine(message);
         }
 
         public override void WriteErrorLine(string message)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
@@ -325,78 +325,78 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteError", line.TrimEnd() + "\r\n");
+                this.SendToSubscribers("WriteError", line.TrimEnd() + "\r\n");
             }
 
-            _psInterface.WriteErrorLine(message);
+            this.psInterface.WriteErrorLine(message);
         }
 
         public override void WriteLine()
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            string[] lines = _writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            string[] lines = this.writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
+                this.SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
             }
 
-            _writeCache.Length = 0;
-            _psInterface.WriteLine();
+            this.writeCache.Length = 0;
+            this.psInterface.WriteLine();
         }
 
         public override void WriteLine(string value)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            string[] lines = (this.writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
+                this.SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
             }
 
-            _writeCache.Length = 0;
-            _psInterface.WriteLine(value);
+            this.writeCache.Length = 0;
+            this.psInterface.WriteLine(value);
         }
 
         public override void WriteLine(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            string[] lines = (_writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            string[] lines = (this.writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
+                this.SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
             }
 
-            _writeCache.Length = 0;
-            _psInterface.WriteLine(foregroundColor, backgroundColor, value);
+            this.writeCache.Length = 0;
+            this.psInterface.WriteLine(foregroundColor, backgroundColor, value);
         }
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
 
-            SendToSubscribers("WriteProgress", sourceId, record);
+            this.SendToSubscribers("WriteProgress", sourceId, record);
 
-            _psInterface.WriteProgress(sourceId, record);
+            this.psInterface.WriteProgress(sourceId, record);
         }
 
         public override void WriteVerboseLine(string message)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
@@ -404,15 +404,15 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteVerbose", line.TrimEnd() + "\r\n");
+                this.SendToSubscribers("WriteVerbose", line.TrimEnd() + "\r\n");
             }
 
-            _psInterface.WriteVerboseLine(message);
+            this.psInterface.WriteVerboseLine(message);
         }
 
         public override void WriteWarningLine(string message)
         {
-            if (_psInterface == null)
+            if (this.psInterface == null)
             {
                 throw new InvalidOperationException();
             }
@@ -420,10 +420,10 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteWarning", line.TrimEnd() + "\r\n");
+                this.SendToSubscribers("WriteWarning", line.TrimEnd() + "\r\n");
             }
 
-            _psInterface.WriteWarningLine(message);
+            this.psInterface.WriteWarningLine(message);
         }
 
         #endregion

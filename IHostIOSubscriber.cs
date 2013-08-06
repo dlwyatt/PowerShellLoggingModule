@@ -3,6 +3,7 @@ using System.Management.Automation;
 using System.Management.Automation.Host;
 
 // ReSharper disable UnusedParameter.Global
+// ReSharper disable UnusedMember.Global
 
 namespace PSLogging
 {
@@ -96,4 +97,5 @@ namespace PSLogging
     }
 }
 
+// ReSharper restore UnusedMember.Global
 // ReSharper restore UnusedParameter.Global

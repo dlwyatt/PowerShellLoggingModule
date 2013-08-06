@@ -9,49 +9,49 @@ namespace PSLogging.Commands
     [Cmdlet(VerbsCommon.Add, "LogFile")]
     public class AddLogFileCommand : PSCmdlet
     {
-        private ScriptBlock _errorCallback;
-        private LogFile _inputObject;
-        private string _path;
-        private StreamType _streams = StreamType.All;
+        private ScriptBlock errorCallback;
+        private LogFile inputObject;
+        private string path;
+        private StreamType streams = StreamType.All;
 
         #region Parameters
 
         [Parameter(Mandatory = true,
-                   Position = 0,
-                   ParameterSetName = "New")]
+            Position = 0,
+            ParameterSetName = "New")]
         public string Path
         {
-            get { return _path; }
+            get { return this.path; }
             set
             {
-                _path = System.IO.Path.IsPathRooted(value)
-                            ? value
-                            : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
+                this.path = System.IO.Path.IsPathRooted(value)
+                                ? value
+                                : System.IO.Path.Combine(this.SessionState.Path.CurrentLocation.Path, value);
             }
         }
 
         [Parameter(ParameterSetName = "New")]
         public StreamType StreamType
         {
-            get { return _streams; }
-            set { _streams = value; }
+            get { return this.streams; }
+            set { this.streams = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnError
         {
-            get { return _errorCallback; }
-            set { _errorCallback = value; }
+            get { return this.errorCallback; }
+            set { this.errorCallback = value; }
         }
 
         [Parameter(ParameterSetName = "AttachExisting",
-                   Mandatory = true,
-                   Position = 0,
-                   ValueFromPipeline = true)]
+            Mandatory = true,
+            Position = 0,
+            ValueFromPipeline = true)]
         public LogFile InputObject
         {
-            get { return _inputObject; }
-            set { _inputObject = value; }
+            get { return this.inputObject; }
+            set { this.inputObject = value; }
         }
 
         #endregion
@@ -60,14 +60,14 @@ namespace PSLogging.Commands
         {
             LogFile logFile;
 
-            if (ParameterSetName == "New")
+            if (this.ParameterSetName == "New")
             {
-                logFile = new LogFile(_path, _streams, _errorCallback);
-                WriteObject(logFile);
+                logFile = new LogFile(this.path, this.streams, this.errorCallback);
+                this.WriteObject(logFile);
             }
             else
             {
-                logFile = _inputObject;
+                logFile = this.inputObject;
             }
 
             HostIoInterceptor.GetInterceptor().AddSubscriber(logFile);
@@ -77,21 +77,21 @@ namespace PSLogging.Commands
     [Cmdlet(VerbsCommon.Get, "LogFile")]
     public class GetLogFileCommand : PSCmdlet
     {
-        private string _path;
+        private string path;
 
         [Parameter(Mandatory = false,
-                   Position = 0,
-                   ValueFromPipeline = true,
-                   ValueFromPipelineByPropertyName = true)]
+            Position = 0,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true)]
         [ValidateNotNullOrEmpty]
         public string Path
         {
-            get { return _path; }
+            get { return this.path; }
             set
             {
-                _path = System.IO.Path.IsPathRooted(value)
-                            ? value
-                            : System.IO.Path.Combine(SessionState.Path.CurrentLocation.Path, value);
+                this.path = System.IO.Path.IsPathRooted(value)
+                                ? value
+                                : System.IO.Path.Combine(this.SessionState.Path.CurrentLocation.Path, value);
             }
         }
 
@@ -102,9 +102,9 @@ namespace PSLogging.Commands
                 var logFile = subscriber as LogFile;
 
                 if (logFile != null &&
-                    (_path == null || System.IO.Path.GetFullPath(logFile.Path) == System.IO.Path.GetFullPath(_path)))
+                    (this.path == null || System.IO.Path.GetFullPath(logFile.Path) == System.IO.Path.GetFullPath(this.path)))
                 {
-                    WriteObject(logFile);
+                    this.WriteObject(logFile);
                 }
             }
         }
@@ -114,13 +114,13 @@ namespace PSLogging.Commands
     public class DisableLogFileCommand : PSCmdlet
     {
         [Parameter(Mandatory = true,
-                   ValueFromPipeline = true,
-                   Position = 0)]
+            ValueFromPipeline = true,
+            Position = 0)]
         public LogFile InputObject { get; set; }
 
         protected override void EndProcessing()
         {
-            HostIoInterceptor.GetInterceptor().RemoveSubscriber(InputObject);
+            HostIoInterceptor.GetInterceptor().RemoveSubscriber(this.InputObject);
         }
     } // End DisableLogFileCommand class
 
@@ -145,58 +145,58 @@ namespace PSLogging.Commands
     [Cmdlet(VerbsCommon.Add, "OutputSubscriber")]
     public class AddOutputSubscriberCommand : PSCmdlet
     {
-        private ScriptBlockOutputSubscriber _inputObject;
-        private ScriptBlock _onWriteDebug;
-        private ScriptBlock _onWriteError;
-        private ScriptBlock _onWriteOutput;
-        private ScriptBlock _onWriteVerbose;
-        private ScriptBlock _onWriteWarning;
+        private ScriptBlockOutputSubscriber inputObject;
+        private ScriptBlock onWriteDebug;
+        private ScriptBlock onWriteError;
+        private ScriptBlock onWriteOutput;
+        private ScriptBlock onWriteVerbose;
+        private ScriptBlock onWriteWarning;
 
         #region Parameters
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteOutput
         {
-            get { return _onWriteOutput; }
-            set { _onWriteOutput = value; }
+            get { return this.onWriteOutput; }
+            set { this.onWriteOutput = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteDebug
         {
-            get { return _onWriteDebug; }
-            set { _onWriteDebug = value; }
+            get { return this.onWriteDebug; }
+            set { this.onWriteDebug = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteVerbose
         {
-            get { return _onWriteVerbose; }
-            set { _onWriteVerbose = value; }
+            get { return this.onWriteVerbose; }
+            set { this.onWriteVerbose = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteError
         {
-            get { return _onWriteError; }
-            set { _onWriteError = value; }
+            get { return this.onWriteError; }
+            set { this.onWriteError = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteWarning
         {
-            get { return _onWriteWarning; }
-            set { _onWriteWarning = value; }
+            get { return this.onWriteWarning; }
+            set { this.onWriteWarning = value; }
         }
 
         [Parameter(ParameterSetName = "AttachExisting",
-                   Mandatory = true,
-                   ValueFromPipeline = true,
-                   Position = 0)]
+            Mandatory = true,
+            ValueFromPipeline = true,
+            Position = 0)]
         public ScriptBlockOutputSubscriber InputObject
         {
-            get { return _inputObject; }
-            set { _inputObject = value; }
+            get { return this.inputObject; }
+            set { this.inputObject = value; }
         }
 
         #endregion
@@ -205,18 +205,18 @@ namespace PSLogging.Commands
         {
             ScriptBlockOutputSubscriber subscriber;
 
-            if (ParameterSetName == "New")
+            if (this.ParameterSetName == "New")
             {
-                subscriber = new ScriptBlockOutputSubscriber(_onWriteOutput,
-                                                             _onWriteDebug,
-                                                             _onWriteVerbose,
-                                                             _onWriteError,
-                                                             _onWriteWarning);
-                WriteObject(subscriber);
+                subscriber = new ScriptBlockOutputSubscriber(this.onWriteOutput,
+                                                             this.onWriteDebug,
+                                                             this.onWriteVerbose,
+                                                             this.onWriteError,
+                                                             this.onWriteWarning);
+                this.WriteObject(subscriber);
             }
             else
             {
-                subscriber = _inputObject;
+                subscriber = this.inputObject;
             }
 
             HostIoInterceptor.GetInterceptor().AddSubscriber(subscriber);
@@ -233,7 +233,7 @@ namespace PSLogging.Commands
                 var scriptBlockSubscriber = subscriber as ScriptBlockOutputSubscriber;
                 if (scriptBlockSubscriber != null)
                 {
-                    WriteObject(scriptBlockSubscriber);
+                    this.WriteObject(scriptBlockSubscriber);
                 }
             }
         }
@@ -243,13 +243,13 @@ namespace PSLogging.Commands
     public class DisableOutputSubscriberCommand : PSCmdlet
     {
         [Parameter(Mandatory = true,
-                   ValueFromPipeline = true,
-                   Position = 0)]
+            ValueFromPipeline = true,
+            Position = 0)]
         public ScriptBlockOutputSubscriber InputObject { get; set; }
 
         protected override void EndProcessing()
         {
-            HostIoInterceptor.GetInterceptor().RemoveSubscriber(InputObject);
+            HostIoInterceptor.GetInterceptor().RemoveSubscriber(this.InputObject);
         }
     } // End DisableOutputSubscriberCommand class
 }
