@@ -40,14 +40,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common.cs" />
+    <Compile Include="Commands\AddOutputSubscriberCommand.cs" />
+    <Compile Include="Commands\DisableLogFileCommand.cs" />
+    <Compile Include="Commands\DisableOutputSubscriberCommand.cs" />
+    <Compile Include="Commands\GetLogFileCommand.cs" />
+    <Compile Include="Commands\GetOutputSubscriberCommand.cs" />
+    <Compile Include="Commands\ResumeLoggingCommand.cs" />
+    <Compile Include="Commands\SuspendLoggingCommand.cs" />
+    <Compile Include="StreamType.cs" />
     <Compile Include="IHostIoSubscriber.cs" />
-    <Compile Include="Commands\Cmdlets.cs" />
+    <Compile Include="Commands\AddLogFileCommand.cs" />
     <Compile Include="LogFile.cs" />
     <Compile Include="HostIoInterceptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HostIoSubscriberBase.cs" />
     <Compile Include="ScriptBlockOutputSubscriber.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="doc\PSLogging.xml">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

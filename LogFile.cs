@@ -1,36 +1,19 @@
-﻿using System;
-using System.IO;
-using System.Management.Automation;
-
-// ReSharper disable MemberCanBePrivate.Global
+﻿// ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 
 namespace PSLogging
 {
+    using System;
+    using System.IO;
+    using System.Management.Automation;
+
     public class LogFile : HostIoSubscriberBase
     {
-        #region Constants
-
-        private const string DateTimeFormat = "r";
-
-        #endregion
-
         #region Fields
 
+        private const string DateTimeFormat = "r";
         private readonly string fileName;
         private readonly string path;
-
-        #endregion
-
-        #region Public Properties
-
-        public string Path
-        {
-            get { return System.IO.Path.Combine(this.path, this.fileName); }
-        }
-
-        public StreamType Streams { get; set; }
-        public ScriptBlock ErrorCallback { get; set; }
 
         #endregion
 
@@ -46,33 +29,17 @@ namespace PSLogging
         }
 
         #endregion
+        
+        #region Properties
 
-        #region Private Methods
-
-        private void CheckDirectory()
+        public ScriptBlock ErrorCallback { get; set; }
+        
+        public string Path
         {
-            if (!String.IsNullOrEmpty(this.path) && !Directory.Exists(this.path))
-            {
-                Directory.CreateDirectory(this.path);
-            }
+            get { return System.IO.Path.Combine(this.path, this.fileName); }
         }
 
-        private void ReportError(Exception e)
-        {
-            if (this.ErrorCallback == null)
-            {
-                return;
-            }
-
-            // ReSharper disable once EmptyGeneralCatchClause
-            try
-            {
-                HostIoInterceptor.GetInterceptor().Paused = true;
-                this.ErrorCallback.Invoke(new object[] { this, e });
-                HostIoInterceptor.GetInterceptor().Paused = false;
-            }
-            catch {}
-        }
+        public StreamType Streams { get; set; }
 
         #endregion
 
@@ -215,6 +182,35 @@ namespace PSLogging
             {
                 this.ReportError(e);
             }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void CheckDirectory()
+        {
+            if (!String.IsNullOrEmpty(this.path) && !Directory.Exists(this.path))
+            {
+                Directory.CreateDirectory(this.path);
+            }
+        }
+
+        private void ReportError(Exception e)
+        {
+            if (this.ErrorCallback == null)
+            {
+                return;
+            }
+
+            // ReSharper disable once EmptyGeneralCatchClause
+            try
+            {
+                HostIoInterceptor.GetInterceptor().Paused = true;
+                this.ErrorCallback.Invoke(new object[] { this, e });
+                HostIoInterceptor.GetInterceptor().Paused = false;
+            }
+            catch { }
         }
 
         #endregion

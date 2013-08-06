@@ -1,9 +1,9 @@
-﻿using System;
-
-// ReSharper disable UnusedMember.Global
+﻿// ReSharper disable UnusedMember.Global
 
 namespace PSLogging
 {
+    using System;
+
     [Flags]
     public enum StreamType
     {

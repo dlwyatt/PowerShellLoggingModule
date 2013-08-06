@@ -1,10 +1,10 @@
-﻿using System.Management.Automation;
-
-// ReSharper disable MemberCanBePrivate.Global
+﻿// ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedMember.Global
 
 namespace PSLogging
 {
+    using System.Management.Automation;
+
     public class ScriptBlockOutputSubscriber : HostIoSubscriberBase
     {
         public ScriptBlockOutputSubscriber(ScriptBlock onWriteOutput,
@@ -36,19 +36,19 @@ namespace PSLogging
             }
         }
 
-        public override void WriteOutput(string message)
-        {
-            if (this.OnWriteOutput != null)
-            {
-                this.OnWriteOutput.Invoke(message);
-            }
-        }
-
         public override void WriteError(string message)
         {
             if (this.OnWriteError != null)
             {
                 this.OnWriteError.Invoke(message);
+            }
+        }
+
+        public override void WriteOutput(string message)
+        {
+            if (this.OnWriteOutput != null)
+            {
+                this.OnWriteOutput.Invoke(message);
             }
         }
 
