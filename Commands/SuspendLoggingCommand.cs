@@ -13,7 +13,7 @@ namespace PSLogging.Commands
         {
             HostIoInterceptor.GetInterceptor().Paused = true;
         }
-    } // End ResumeLoggingCommand class
+    }
 }
 
 // ReSharper restore MemberCanBePrivate.Global
