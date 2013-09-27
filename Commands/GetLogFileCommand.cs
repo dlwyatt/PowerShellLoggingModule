@@ -21,9 +21,7 @@ namespace PSLogging.Commands
             get { return this.path; }
             set
             {
-                this.path = System.IO.Path.IsPathRooted(value)
-                                ? value
-                                : System.IO.Path.Combine(this.SessionState.Path.CurrentLocation.Path, value);
+                this.path = this.GetUnresolvedProviderPathFromPSPath(value);
             }
         }
 
