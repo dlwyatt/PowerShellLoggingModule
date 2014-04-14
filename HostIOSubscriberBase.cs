@@ -4,7 +4,7 @@
     using System.Management.Automation;
     using System.Management.Automation.Host;
 
-    public class HostIoSubscriberBase : IHostIoSubscriber
+    public class HostIOSubscriberBase : IHostIOSubscriber
     {
         public virtual void ChoicePrompt(ChoiceDescription choice) {}
         public virtual void CredentialPrompt(PSCredential credential) {}

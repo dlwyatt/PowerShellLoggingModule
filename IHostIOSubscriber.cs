@@ -10,7 +10,7 @@ namespace PSLogging
     /// <summary>
     ///     The Logger interface.
     /// </summary>
-    public interface IHostIoSubscriber
+    public interface IHostIOSubscriber
     {
         #region Public Methods and Operators
 

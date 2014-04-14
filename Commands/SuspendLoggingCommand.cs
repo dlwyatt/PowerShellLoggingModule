@@ -11,7 +11,7 @@ namespace PSLogging.Commands
     {
         protected override void EndProcessing()
         {
-            HostIoInterceptor.GetInterceptor().Paused = true;
+            HostIOInterceptor.Instance.Paused = true;
         }
     }
 }

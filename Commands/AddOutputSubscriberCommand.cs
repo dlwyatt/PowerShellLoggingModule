@@ -83,7 +83,8 @@ namespace PSLogging.Commands
                 subscriber = this.inputObject;
             }
 
-            HostIoInterceptor.GetInterceptor().AddSubscriber(subscriber);
+            HostIOInterceptor.Instance.AttachToHost(this.Host);
+            HostIOInterceptor.Instance.AddSubscriber(subscriber);
         }
     } // End AddOutputSubscriberCommand class
 }

@@ -7,7 +7,7 @@ namespace PSLogging
     using System.IO;
     using System.Management.Automation;
 
-    public class LogFile : HostIoSubscriberBase
+    public class LogFile : HostIOSubscriberBase
     {
         #region Fields
 
@@ -206,9 +206,9 @@ namespace PSLogging
             // ReSharper disable once EmptyGeneralCatchClause
             try
             {
-                HostIoInterceptor.GetInterceptor().Paused = true;
-                this.ErrorCallback.Invoke(new object[] { this, e });
-                HostIoInterceptor.GetInterceptor().Paused = false;
+                HostIOInterceptor.Instance.Paused = true;
+                this.ErrorCallback.Invoke(this, e);
+                HostIOInterceptor.Instance.Paused = false;
             }
             catch { }
         }

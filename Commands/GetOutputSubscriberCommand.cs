@@ -12,7 +12,7 @@ namespace PSLogging.Commands
     {
         protected override void EndProcessing()
         {
-            foreach (IHostIoSubscriber subscriber in HostIoInterceptor.GetInterceptor().Subscribers)
+            foreach (IHostIOSubscriber subscriber in HostIOInterceptor.Instance.Subscribers)
             {
                 var scriptBlockSubscriber = subscriber as ScriptBlockOutputSubscriber;
                 if (scriptBlockSubscriber != null)

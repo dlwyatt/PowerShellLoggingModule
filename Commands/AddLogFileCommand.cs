@@ -69,7 +69,8 @@ namespace PSLogging.Commands
                 logFile = this.inputObject;
             }
 
-            HostIoInterceptor.GetInterceptor().AddSubscriber(logFile);
+            HostIOInterceptor.Instance.AttachToHost(this.Host);
+            HostIOInterceptor.Instance.AddSubscriber(logFile);
         }
     } // End AddLogFileCommand class
 }

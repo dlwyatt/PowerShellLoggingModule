@@ -16,7 +16,7 @@ namespace PSLogging.Commands
 
         protected override void EndProcessing()
         {
-            HostIoInterceptor.GetInterceptor().RemoveSubscriber(this.InputObject);
+            HostIOInterceptor.Instance.RemoveSubscriber(this.InputObject);
         }
     } // End DisableLogFileCommand class
 }

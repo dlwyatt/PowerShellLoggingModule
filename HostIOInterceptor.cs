@@ -12,12 +12,13 @@ namespace PSLogging
     using System.Security;
     using System.Text;
 
-    public class HostIoInterceptor : PSHostUserInterface
+    public class HostIOInterceptor : PSHostUserInterface
     {
         #region Fields
 
-        private PSHostUserInterface externalUi;
-        private static readonly HostIoInterceptor Instance = new HostIoInterceptor();
+        private PSHostUserInterface externalUI;
+        private PSHost host;
+        public static readonly HostIOInterceptor Instance = new HostIOInterceptor();
         private bool paused;
         private readonly List<WeakReference> subscribers;
         private readonly StringBuilder writeCache;
@@ -26,29 +27,18 @@ namespace PSLogging
 
         #region Constructors and Destructors
 
-        private HostIoInterceptor()
+        private HostIOInterceptor()
         {
-            this.externalUi = null;
+            this.externalUI = null;
             this.subscribers = new List<WeakReference>();
             this.writeCache = new StringBuilder();
             this.paused = false;
+            this.host = null;
         }
 
         #endregion
 
         #region Properties
-
-        public PSHostUserInterface HostUi
-        {
-            get { return this.externalUi; }
-            set
-            {
-                if (value != null && value != this.externalUi)
-                {
-                    this.externalUi = value;
-                }
-            }
-        }
         
         public bool Paused
         {
@@ -58,16 +48,19 @@ namespace PSLogging
 
         public override PSHostRawUserInterface RawUI
         {
-            get { return this.externalUi.RawUI; }
+            get
+            {
+                return this.externalUI == null ? null : this.externalUI.RawUI;
+            }
         }
 
-        public IEnumerable<IHostIoSubscriber> Subscribers
+        public IEnumerable<IHostIOSubscriber> Subscribers
         {
             get
             {
                 foreach (WeakReference reference in this.subscribers)
                 {
-                    var subscriber = (IHostIoSubscriber) reference.Target;
+                    var subscriber = (IHostIOSubscriber) reference.Target;
                     if (subscriber != null)
                     {
                         yield return subscriber;
@@ -80,7 +73,7 @@ namespace PSLogging
 
         #region Public Methods and Operators
 
-        public void AddSubscriber(IHostIoSubscriber subscriber)
+        public void AddSubscriber(IHostIOSubscriber subscriber)
         {
             foreach (WeakReference reference in this.subscribers)
             {
@@ -93,21 +86,52 @@ namespace PSLogging
             this.subscribers.Add(new WeakReference(subscriber));
         }
 
-        public static HostIoInterceptor GetInterceptor()
+        public void AttachToHost(PSHost host)
         {
-            return Instance;
+            if (this.host != null) { return; }
+
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+
+            object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
+            object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+
+            FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
+
+            this.externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
+            externalUIField.SetValue(ui, this);
+            this.host = host;
+        }
+
+        public void DetachFromHost()
+        {
+            if (this.host == null) { return; }
+
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+
+            object uiRef = this.host.GetType().GetField("internalUIRef", flags).GetValue(this.host);
+            object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+
+            FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
+
+            if (externalUIField.GetValue(ui) == this)
+            {
+                externalUIField.SetValue(ui, this.externalUI);
+            }
+
+            this.externalUI = null;
+            this.host = null;
         }
 
         public override Dictionary<string, PSObject> Prompt(string caption,
                                                             string message,
                                                             Collection<FieldDescription> descriptions)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            Dictionary<string, PSObject> result = this.externalUi.Prompt(caption, message, descriptions);
+            Dictionary<string, PSObject> result = this.externalUI.Prompt(caption, message, descriptions);
 
             this.SendToSubscribers("Prompt", result);
 
@@ -119,12 +143,12 @@ namespace PSLogging
                                             Collection<ChoiceDescription> choices,
                                             int defaultChoice)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            int result = this.externalUi.PromptForChoice(caption, message, choices, defaultChoice);
+            int result = this.externalUI.PromptForChoice(caption, message, choices, defaultChoice);
 
             this.SendToSubscribers("ChoicePrompt", choices[result]);
 
@@ -136,12 +160,12 @@ namespace PSLogging
                                                          string userName,
                                                          string targetName)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            PSCredential result = this.externalUi.PromptForCredential(caption, message, userName, targetName);
+            PSCredential result = this.externalUI.PromptForCredential(caption, message, userName, targetName);
 
             this.SendToSubscribers("CredentialPrompt", result);
 
@@ -155,12 +179,12 @@ namespace PSLogging
                                                          PSCredentialTypes allowedCredentialTypes,
                                                          PSCredentialUIOptions options)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            PSCredential result = this.externalUi.PromptForCredential(caption,
+            PSCredential result = this.externalUI.PromptForCredential(caption,
                                                                        message,
                                                                        userName,
                                                                        targetName,
@@ -174,12 +198,12 @@ namespace PSLogging
 
         public override string ReadLine()
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            string result = this.externalUi.ReadLine();
+            string result = this.externalUI.ReadLine();
 
             this.SendToSubscribers("ReadFromHost", result);
 
@@ -188,15 +212,20 @@ namespace PSLogging
 
         public override SecureString ReadLineAsSecureString()
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            return this.externalUi.ReadLineAsSecureString();
+            return this.externalUI.ReadLineAsSecureString();
         }
 
-        public void RemoveSubscriber(IHostIoSubscriber subscriber)
+        public void RemoveAllSubscribers()
+        {
+            this.subscribers.Clear();
+        }
+
+        public void RemoveSubscriber(IHostIOSubscriber subscriber)
         {
             var matches = new List<WeakReference>();
 
@@ -216,12 +245,12 @@ namespace PSLogging
 
         public override void Write(string value)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            this.externalUi.Write(value);
+            this.externalUI.Write(value);
 
             if (!this.paused)
             {
@@ -231,12 +260,12 @@ namespace PSLogging
 
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            this.externalUi.Write(foregroundColor, backgroundColor, value);
+            this.externalUI.Write(foregroundColor, backgroundColor, value);
 
             if (!this.paused)
             {
@@ -246,7 +275,7 @@ namespace PSLogging
 
         public override void WriteDebugLine(string message)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -257,12 +286,12 @@ namespace PSLogging
                 this.SendToSubscribers("WriteDebug", line.TrimEnd() + "\r\n");
             }
 
-            this.externalUi.WriteDebugLine(message);
+            this.externalUI.WriteDebugLine(message);
         }
 
         public override void WriteErrorLine(string message)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -273,12 +302,12 @@ namespace PSLogging
                 this.SendToSubscribers("WriteError", line.TrimEnd() + "\r\n");
             }
 
-            this.externalUi.WriteErrorLine(message);
+            this.externalUI.WriteErrorLine(message);
         }
 
         public override void WriteLine()
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -290,12 +319,12 @@ namespace PSLogging
             }
 
             this.writeCache.Length = 0;
-            this.externalUi.WriteLine();
+            this.externalUI.WriteLine();
         }
 
         public override void WriteLine(string value)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -307,12 +336,12 @@ namespace PSLogging
             }
 
             this.writeCache.Length = 0;
-            this.externalUi.WriteLine(value);
+            this.externalUI.WriteLine(value);
         }
 
         public override void WriteLine(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -324,24 +353,24 @@ namespace PSLogging
             }
 
             this.writeCache.Length = 0;
-            this.externalUi.WriteLine(foregroundColor, backgroundColor, value);
+            this.externalUI.WriteLine(foregroundColor, backgroundColor, value);
         }
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
             this.SendToSubscribers("WriteProgress", sourceId, record);
 
-            this.externalUi.WriteProgress(sourceId, record);
+            this.externalUI.WriteProgress(sourceId, record);
         }
 
         public override void WriteVerboseLine(string message)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -352,12 +381,12 @@ namespace PSLogging
                 this.SendToSubscribers("WriteVerbose", line.TrimEnd() + "\r\n");
             }
 
-            this.externalUi.WriteVerboseLine(message);
+            this.externalUI.WriteVerboseLine(message);
         }
 
         public override void WriteWarningLine(string message)
         {
-            if (this.externalUi == null)
+            if (this.externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -368,7 +397,7 @@ namespace PSLogging
                 this.SendToSubscribers("WriteWarning", line.TrimEnd() + "\r\n");
             }
 
-            this.externalUi.WriteWarningLine(message);
+            this.externalUI.WriteWarningLine(message);
         }
 
         #endregion
@@ -388,7 +417,7 @@ namespace PSLogging
                 return;
             }
 
-            MethodInfo method = typeof(IHostIoSubscriber).GetMethod(methodName);
+            MethodInfo method = typeof(IHostIOSubscriber).GetMethod(methodName);
             if (method == null)
             {
                 throw new ArgumentException(
@@ -400,7 +429,7 @@ namespace PSLogging
 
             foreach (WeakReference reference in this.subscribers)
             {
-                var subscriber = (IHostIoSubscriber) reference.Target;
+                var subscriber = (IHostIOSubscriber) reference.Target;
                 if (subscriber == null)
                 {
                     deadReferences.Add(reference);
