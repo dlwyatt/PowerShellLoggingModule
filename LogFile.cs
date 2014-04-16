@@ -202,15 +202,18 @@ namespace PSLogging
             {
                 return;
             }
-
+            
             // ReSharper disable once EmptyGeneralCatchClause
             try
             {
                 HostIOInterceptor.Instance.Paused = true;
                 this.ErrorCallback.Invoke(this, e);
-                HostIOInterceptor.Instance.Paused = false;
             }
             catch { }
+            finally
+            {
+                HostIOInterceptor.Instance.Paused = false;
+            }
         }
 
         #endregion
