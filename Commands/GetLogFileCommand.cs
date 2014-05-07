@@ -18,10 +18,10 @@ namespace PSLogging.Commands
         [ValidateNotNullOrEmpty]
         public string Path
         {
-            get { return this.path; }
+            get { return path; }
             set
             {
-                this.path = this.GetUnresolvedProviderPathFromPSPath(value);
+                path = GetUnresolvedProviderPathFromPSPath(value);
             }
         }
 
@@ -32,9 +32,9 @@ namespace PSLogging.Commands
                 var logFile = subscriber as LogFile;
 
                 if (logFile != null &&
-                    (this.path == null || System.IO.Path.GetFullPath(logFile.Path) == System.IO.Path.GetFullPath(this.path)))
+                    (path == null || System.IO.Path.GetFullPath(logFile.Path) == System.IO.Path.GetFullPath(path)))
                 {
-                    this.WriteObject(logFile);
+                    WriteObject(logFile);
                 }
             }
         }

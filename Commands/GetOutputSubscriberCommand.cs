@@ -17,7 +17,7 @@ namespace PSLogging.Commands
                 var scriptBlockSubscriber = subscriber as ScriptBlockOutputSubscriber;
                 if (scriptBlockSubscriber != null)
                 {
-                    this.WriteObject(scriptBlockSubscriber);
+                    WriteObject(scriptBlockSubscriber);
                 }
             }
         }

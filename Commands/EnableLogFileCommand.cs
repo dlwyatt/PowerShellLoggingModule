@@ -7,8 +7,8 @@ namespace PSLogging.Commands
 {
     using System.Management.Automation;
     
-    [Cmdlet(VerbsCommon.Add, "LogFile")]
-    public class AddLogFileCommand : PSCmdlet
+    [Cmdlet(VerbsLifecycle.Enable, "LogFile")]
+    public class EnableLogFileCommand : PSCmdlet
     {
         private ScriptBlock errorCallback;
         private LogFile inputObject;
@@ -23,15 +23,15 @@ namespace PSLogging.Commands
             ValueFromPipeline = true)]
         public LogFile InputObject
         {
-            get { return this.inputObject; }
-            set { this.inputObject = value; }
+            get { return inputObject; }
+            set { inputObject = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnError
         {
-            get { return this.errorCallback; }
-            set { this.errorCallback = value; }
+            get { return errorCallback; }
+            set { errorCallback = value; }
         }
 
         [Parameter(Mandatory = true,
@@ -39,18 +39,18 @@ namespace PSLogging.Commands
             ParameterSetName = "New")]
         public string Path
         {
-            get { return this.path; }
+            get { return path; }
             set
             {
-                this.path = this.GetUnresolvedProviderPathFromPSPath(value);
+                path = GetUnresolvedProviderPathFromPSPath(value);
             }
         }
 
         [Parameter(ParameterSetName = "New")]
         public StreamType StreamType
         {
-            get { return this.streams; }
-            set { this.streams = value; }
+            get { return streams; }
+            set { streams = value; }
         }
 
         #endregion
@@ -59,17 +59,17 @@ namespace PSLogging.Commands
         {
             LogFile logFile;
 
-            if (this.ParameterSetName == "New")
+            if (ParameterSetName == "New")
             {
-                logFile = new LogFile(this.path, this.streams, this.errorCallback);
-                this.WriteObject(logFile);
+                logFile = new LogFile(path, streams, errorCallback);
+                WriteObject(logFile);
             }
             else
             {
-                logFile = this.inputObject;
+                logFile = inputObject;
             }
 
-            HostIOInterceptor.Instance.AttachToHost(this.Host);
+            HostIOInterceptor.Instance.AttachToHost(Host);
             HostIOInterceptor.Instance.AddSubscriber(logFile);
         }
     } // End AddLogFileCommand class

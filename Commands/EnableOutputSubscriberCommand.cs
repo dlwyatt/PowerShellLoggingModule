@@ -6,8 +6,8 @@ namespace PSLogging.Commands
 {
     using System.Management.Automation;
 
-    [Cmdlet(VerbsCommon.Add, "OutputSubscriber")]
-    public class AddOutputSubscriberCommand : PSCmdlet
+    [Cmdlet(VerbsLifecycle.Enable, "OutputSubscriber")]
+    public class EnableOutputSubscriberCommand : PSCmdlet
     {
         private ScriptBlockOutputSubscriber inputObject;
         private ScriptBlock onWriteDebug;
@@ -24,43 +24,43 @@ namespace PSLogging.Commands
             Position = 0)]
         public ScriptBlockOutputSubscriber InputObject
         {
-            get { return this.inputObject; }
-            set { this.inputObject = value; }
+            get { return inputObject; }
+            set { inputObject = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteDebug
         {
-            get { return this.onWriteDebug; }
-            set { this.onWriteDebug = value; }
+            get { return onWriteDebug; }
+            set { onWriteDebug = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteError
         {
-            get { return this.onWriteError; }
-            set { this.onWriteError = value; }
+            get { return onWriteError; }
+            set { onWriteError = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteOutput
         {
-            get { return this.onWriteOutput; }
-            set { this.onWriteOutput = value; }
+            get { return onWriteOutput; }
+            set { onWriteOutput = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteVerbose
         {
-            get { return this.onWriteVerbose; }
-            set { this.onWriteVerbose = value; }
+            get { return onWriteVerbose; }
+            set { onWriteVerbose = value; }
         }
 
         [Parameter(ParameterSetName = "New")]
         public ScriptBlock OnWriteWarning
         {
-            get { return this.onWriteWarning; }
-            set { this.onWriteWarning = value; }
+            get { return onWriteWarning; }
+            set { onWriteWarning = value; }
         }
 
         #endregion
@@ -69,21 +69,21 @@ namespace PSLogging.Commands
         {
             ScriptBlockOutputSubscriber subscriber;
 
-            if (this.ParameterSetName == "New")
+            if (ParameterSetName == "New")
             {
-                subscriber = new ScriptBlockOutputSubscriber(this.onWriteOutput,
-                                                             this.onWriteDebug,
-                                                             this.onWriteVerbose,
-                                                             this.onWriteError,
-                                                             this.onWriteWarning);
-                this.WriteObject(subscriber);
+                subscriber = new ScriptBlockOutputSubscriber(onWriteOutput,
+                                                             onWriteDebug,
+                                                             onWriteVerbose,
+                                                             onWriteError,
+                                                             onWriteWarning);
+                WriteObject(subscriber);
             }
             else
             {
-                subscriber = this.inputObject;
+                subscriber = inputObject;
             }
 
-            HostIOInterceptor.Instance.AttachToHost(this.Host);
+            HostIOInterceptor.Instance.AttachToHost(Host);
             HostIOInterceptor.Instance.AddSubscriber(subscriber);
         }
     } // End AddOutputSubscriberCommand class

@@ -11,7 +11,8 @@
     <AssemblyName>PowerShellLoggingModule</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,15 +33,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\WindowsPowerShell\v1.0\System.Management.Automation.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\AddOutputSubscriberCommand.cs" />
+    <Compile Include="Commands\EnableOutputSubscriberCommand.cs" />
     <Compile Include="Commands\DisableLogFileCommand.cs" />
     <Compile Include="Commands\DisableOutputSubscriberCommand.cs" />
     <Compile Include="Commands\GetLogFileCommand.cs" />
@@ -49,7 +48,7 @@
     <Compile Include="Commands\SuspendLoggingCommand.cs" />
     <Compile Include="StreamType.cs" />
     <Compile Include="IHostIoSubscriber.cs" />
-    <Compile Include="Commands\AddLogFileCommand.cs" />
+    <Compile Include="Commands\EnableLogFileCommand.cs" />
     <Compile Include="LogFile.cs" />
     <Compile Include="HostIoInterceptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

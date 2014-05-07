@@ -29,11 +29,11 @@ namespace PSLogging
 
         private HostIOInterceptor()
         {
-            this.externalUI = null;
-            this.subscribers = new List<WeakReference>();
-            this.writeCache = new StringBuilder();
-            this.paused = false;
-            this.host = null;
+            externalUI = null;
+            subscribers = new List<WeakReference>();
+            writeCache = new StringBuilder();
+            paused = false;
+            host = null;
         }
 
         #endregion
@@ -42,15 +42,15 @@ namespace PSLogging
         
         public bool Paused
         {
-            get { return this.paused; }
-            set { this.paused = value; }
+            get { return paused; }
+            set { paused = value; }
         }
 
         public override PSHostRawUserInterface RawUI
         {
             get
             {
-                return this.externalUI == null ? null : this.externalUI.RawUI;
+                return externalUI == null ? null : externalUI.RawUI;
             }
         }
 
@@ -58,7 +58,7 @@ namespace PSLogging
         {
             get
             {
-                foreach (WeakReference reference in this.subscribers)
+                foreach (WeakReference reference in subscribers)
                 {
                     var subscriber = (IHostIOSubscriber) reference.Target;
                     if (subscriber != null)
@@ -75,7 +75,7 @@ namespace PSLogging
 
         public void AddSubscriber(IHostIOSubscriber subscriber)
         {
-            foreach (WeakReference reference in this.subscribers)
+            foreach (WeakReference reference in subscribers)
             {
                 if (reference.Target == subscriber)
                 {
@@ -83,7 +83,7 @@ namespace PSLogging
                 }
             }
 
-            this.subscribers.Add(new WeakReference(subscriber));
+            subscribers.Add(new WeakReference(subscriber));
         }
 
         public void AttachToHost(PSHost host)
@@ -97,43 +97,43 @@ namespace PSLogging
 
             FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
 
-            this.externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
+            externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
             externalUIField.SetValue(ui, this);
             this.host = host;
         }
 
         public void DetachFromHost()
         {
-            if (this.host == null) { return; }
+            if (host == null) { return; }
 
             var flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
-            object uiRef = this.host.GetType().GetField("internalUIRef", flags).GetValue(this.host);
+            object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
             object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
 
             FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
 
             if (externalUIField.GetValue(ui) == this)
             {
-                externalUIField.SetValue(ui, this.externalUI);
+                externalUIField.SetValue(ui, externalUI);
             }
 
-            this.externalUI = null;
-            this.host = null;
+            externalUI = null;
+            host = null;
         }
 
         public override Dictionary<string, PSObject> Prompt(string caption,
                                                             string message,
                                                             Collection<FieldDescription> descriptions)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            Dictionary<string, PSObject> result = this.externalUI.Prompt(caption, message, descriptions);
+            Dictionary<string, PSObject> result = externalUI.Prompt(caption, message, descriptions);
 
-            this.SendToSubscribers("Prompt", result);
+            SendToSubscribers("Prompt", result);
 
             return result;
         }
@@ -143,14 +143,14 @@ namespace PSLogging
                                             Collection<ChoiceDescription> choices,
                                             int defaultChoice)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            int result = this.externalUI.PromptForChoice(caption, message, choices, defaultChoice);
+            int result = externalUI.PromptForChoice(caption, message, choices, defaultChoice);
 
-            this.SendToSubscribers("ChoicePrompt", choices[result]);
+            SendToSubscribers("ChoicePrompt", choices[result]);
 
             return result;
         }
@@ -160,14 +160,14 @@ namespace PSLogging
                                                          string userName,
                                                          string targetName)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            PSCredential result = this.externalUI.PromptForCredential(caption, message, userName, targetName);
+            PSCredential result = externalUI.PromptForCredential(caption, message, userName, targetName);
 
-            this.SendToSubscribers("CredentialPrompt", result);
+            SendToSubscribers("CredentialPrompt", result);
 
             return result;
         }
@@ -179,57 +179,57 @@ namespace PSLogging
                                                          PSCredentialTypes allowedCredentialTypes,
                                                          PSCredentialUIOptions options)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            PSCredential result = this.externalUI.PromptForCredential(caption,
+            PSCredential result = externalUI.PromptForCredential(caption,
                                                                        message,
                                                                        userName,
                                                                        targetName,
                                                                        allowedCredentialTypes,
                                                                        options);
 
-            this.SendToSubscribers("CredentialPrompt", result);
+            SendToSubscribers("CredentialPrompt", result);
 
             return result;
         }
 
         public override string ReadLine()
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            string result = this.externalUI.ReadLine();
+            string result = externalUI.ReadLine();
 
-            this.SendToSubscribers("ReadFromHost", result);
+            SendToSubscribers("ReadFromHost", result);
 
             return result;
         }
 
         public override SecureString ReadLineAsSecureString()
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            return this.externalUI.ReadLineAsSecureString();
+            return externalUI.ReadLineAsSecureString();
         }
 
         public void RemoveAllSubscribers()
         {
-            this.subscribers.Clear();
+            subscribers.Clear();
         }
 
         public void RemoveSubscriber(IHostIOSubscriber subscriber)
         {
             var matches = new List<WeakReference>();
 
-            foreach (WeakReference reference in this.subscribers)
+            foreach (WeakReference reference in subscribers)
             {
                 if (reference.Target == subscriber)
                 {
@@ -239,43 +239,43 @@ namespace PSLogging
 
             foreach (WeakReference reference in matches)
             {
-                this.subscribers.Remove(reference);
+                subscribers.Remove(reference);
             }
         }
 
         public override void Write(string value)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            this.externalUI.Write(value);
+            externalUI.Write(value);
 
-            if (!this.paused)
+            if (!paused)
             {
-                this.writeCache.Append(value);
+                writeCache.Append(value);
             }
         }
 
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            this.externalUI.Write(foregroundColor, backgroundColor, value);
+            externalUI.Write(foregroundColor, backgroundColor, value);
 
-            if (!this.paused)
+            if (!paused)
             {
-                this.writeCache.Append(value);
+                writeCache.Append(value);
             }
         }
 
         public override void WriteDebugLine(string message)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -283,15 +283,15 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                this.SendToSubscribers("WriteDebug", line.TrimEnd() + "\r\n");
+                SendToSubscribers("WriteDebug", line.TrimEnd() + "\r\n");
             }
 
-            this.externalUI.WriteDebugLine(message);
+            externalUI.WriteDebugLine(message);
         }
 
         public override void WriteErrorLine(string message)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -299,78 +299,78 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                this.SendToSubscribers("WriteError", line.TrimEnd() + "\r\n");
+                SendToSubscribers("WriteError", line.TrimEnd() + "\r\n");
             }
 
-            this.externalUI.WriteErrorLine(message);
+            externalUI.WriteErrorLine(message);
         }
 
         public override void WriteLine()
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            string[] lines = this.writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            string[] lines = writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                this.SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
+                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
             }
 
-            this.writeCache.Length = 0;
-            this.externalUI.WriteLine();
+            writeCache.Length = 0;
+            externalUI.WriteLine();
         }
 
         public override void WriteLine(string value)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            string[] lines = (this.writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            string[] lines = (writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                this.SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
+                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
             }
 
-            this.writeCache.Length = 0;
-            this.externalUI.WriteLine(value);
+            writeCache.Length = 0;
+            externalUI.WriteLine(value);
         }
 
         public override void WriteLine(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            string[] lines = (this.writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            string[] lines = (writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                this.SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
+                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
             }
 
-            this.writeCache.Length = 0;
-            this.externalUI.WriteLine(foregroundColor, backgroundColor, value);
+            writeCache.Length = 0;
+            externalUI.WriteLine(foregroundColor, backgroundColor, value);
         }
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
 
-            this.SendToSubscribers("WriteProgress", sourceId, record);
+            SendToSubscribers("WriteProgress", sourceId, record);
 
-            this.externalUI.WriteProgress(sourceId, record);
+            externalUI.WriteProgress(sourceId, record);
         }
 
         public override void WriteVerboseLine(string message)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -378,15 +378,15 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                this.SendToSubscribers("WriteVerbose", line.TrimEnd() + "\r\n");
+                SendToSubscribers("WriteVerbose", line.TrimEnd() + "\r\n");
             }
 
-            this.externalUI.WriteVerboseLine(message);
+            externalUI.WriteVerboseLine(message);
         }
 
         public override void WriteWarningLine(string message)
         {
-            if (this.externalUI == null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException();
             }
@@ -394,10 +394,10 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                this.SendToSubscribers("WriteWarning", line.TrimEnd() + "\r\n");
+                SendToSubscribers("WriteWarning", line.TrimEnd() + "\r\n");
             }
 
-            this.externalUI.WriteWarningLine(message);
+            externalUI.WriteWarningLine(message);
         }
 
         #endregion
@@ -412,7 +412,7 @@ namespace PSLogging
             // delegates (assuming it is even possible), when the target methods have different
             // signatures.
 
-            if (this.paused)
+            if (paused)
             {
                 return;
             }
@@ -427,7 +427,7 @@ namespace PSLogging
 
             var deadReferences = new List<WeakReference>();
 
-            foreach (WeakReference reference in this.subscribers)
+            foreach (WeakReference reference in subscribers)
             {
                 var subscriber = (IHostIOSubscriber) reference.Target;
                 if (subscriber == null)
@@ -442,7 +442,7 @@ namespace PSLogging
 
             foreach (WeakReference reference in deadReferences)
             {
-                this.subscribers.Remove(reference);
+                subscribers.Remove(reference);
             }
         }
 
