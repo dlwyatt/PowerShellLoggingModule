@@ -89,8 +89,9 @@ namespace PSLogging
         public void AttachToHost(PSHost host)
         {
             if (this.host != null) { return; }
+            if (host == null) { return; }
 
-            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
             object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
             object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
@@ -106,7 +107,7 @@ namespace PSLogging
         {
             if (host == null) { return; }
 
-            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
             object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
             object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
@@ -133,7 +134,7 @@ namespace PSLogging
 
             Dictionary<string, PSObject> result = externalUI.Prompt(caption, message, descriptions);
 
-            SendToSubscribers("Prompt", result);
+            SendToSubscribers(s => s.Prompt(result));
 
             return result;
         }
@@ -150,7 +151,7 @@ namespace PSLogging
 
             int result = externalUI.PromptForChoice(caption, message, choices, defaultChoice);
 
-            SendToSubscribers("ChoicePrompt", choices[result]);
+            SendToSubscribers(s => s.ChoicePrompt(choices[result]));
 
             return result;
         }
@@ -167,7 +168,7 @@ namespace PSLogging
 
             PSCredential result = externalUI.PromptForCredential(caption, message, userName, targetName);
 
-            SendToSubscribers("CredentialPrompt", result);
+            SendToSubscribers(s => s.CredentialPrompt(result));
 
             return result;
         }
@@ -191,7 +192,7 @@ namespace PSLogging
                                                                        allowedCredentialTypes,
                                                                        options);
 
-            SendToSubscribers("CredentialPrompt", result);
+            SendToSubscribers(s => s.CredentialPrompt(result));
 
             return result;
         }
@@ -205,7 +206,7 @@ namespace PSLogging
 
             string result = externalUI.ReadLine();
 
-            SendToSubscribers("ReadFromHost", result);
+            SendToSubscribers(s => s.ReadFromHost(result));
 
             return result;
         }
@@ -283,7 +284,8 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteDebug", line.TrimEnd() + "\r\n");
+                string temp = line;
+                SendToSubscribers(s => s.WriteDebug(temp.TrimEnd() + "\r\n"));
             }
 
             externalUI.WriteDebugLine(message);
@@ -299,7 +301,8 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteError", line.TrimEnd() + "\r\n");
+                string temp = line;
+                SendToSubscribers(s => s.WriteError(temp.TrimEnd() + "\r\n"));
             }
 
             externalUI.WriteErrorLine(message);
@@ -315,7 +318,8 @@ namespace PSLogging
             string[] lines = writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
+                string temp = line;
+                SendToSubscribers(s => s.WriteOutput(temp.TrimEnd() + "\r\n"));
             }
 
             writeCache.Length = 0;
@@ -332,7 +336,8 @@ namespace PSLogging
             string[] lines = (writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
+                string temp = line;
+                SendToSubscribers(s => s.WriteOutput(temp.TrimEnd() + "\r\n"));
             }
 
             writeCache.Length = 0;
@@ -349,7 +354,8 @@ namespace PSLogging
             string[] lines = (writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteOutput", line.TrimEnd() + "\r\n");
+                string temp = line;
+                SendToSubscribers(s => s.WriteOutput(temp.TrimEnd() + "\r\n"));
             }
 
             writeCache.Length = 0;
@@ -363,7 +369,7 @@ namespace PSLogging
                 throw new InvalidOperationException();
             }
 
-            SendToSubscribers("WriteProgress", sourceId, record);
+            SendToSubscribers(s => s.WriteProgress(sourceId, record));
 
             externalUI.WriteProgress(sourceId, record);
         }
@@ -378,7 +384,8 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteVerbose", line.TrimEnd() + "\r\n");
+                string temp = line;
+                SendToSubscribers(s => s.WriteVerbose(temp.TrimEnd() + "\r\n"));
             }
 
             externalUI.WriteVerboseLine(message);
@@ -394,7 +401,8 @@ namespace PSLogging
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
-                SendToSubscribers("WriteWarning", line.TrimEnd() + "\r\n");
+                string temp = line;
+                SendToSubscribers(s => s.WriteWarning(temp.TrimEnd() + "\r\n"));
             }
 
             externalUI.WriteWarningLine(message);
@@ -404,26 +412,9 @@ namespace PSLogging
 
         #region Private Methods
 
-        private void SendToSubscribers(string methodName, params object[] args)
+        public void SendToSubscribers(Action<IHostIOSubscriber> action)
         {
-            // Refactored the duplicate code that enumerates the _subscribers list and removes dead
-            // references in to this method.  It uses Reflection to invoke the methods on
-            // subscriber objects because I'm not sure how to accomplish the same thing using
-            // delegates (assuming it is even possible), when the target methods have different
-            // signatures.
-
-            if (paused)
-            {
-                return;
-            }
-
-            MethodInfo method = typeof(IHostIOSubscriber).GetMethod(methodName);
-            if (method == null)
-            {
-                throw new ArgumentException(
-                    "Method '" + methodName + "' does not exist in the IHostIoSubscriber interface.",
-                    "methodName");
-            }
+            if (paused) { return; }
 
             var deadReferences = new List<WeakReference>();
 
@@ -436,7 +427,7 @@ namespace PSLogging
                 }
                 else
                 {
-                    method.Invoke(subscriber, args);
+                    action(subscriber);
                 }
             }
 
