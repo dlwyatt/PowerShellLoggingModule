@@ -6,7 +6,7 @@
 namespace PSLogging.Commands
 {
     using System.Management.Automation;
-    
+
     [Cmdlet(VerbsLifecycle.Enable, "LogFile")]
     public class EnableLogFileCommand : PSCmdlet
     {
@@ -14,6 +14,7 @@ namespace PSLogging.Commands
         private LogFile inputObject;
         private string path;
         private StreamType streams = StreamType.All;
+        private string dateTimeFormat;
 
         #region Parameters
 
@@ -53,6 +54,13 @@ namespace PSLogging.Commands
             set { streams = value; }
         }
 
+        [Parameter(ParameterSetName = "New")]
+        public string DateTimeFormat
+        {
+            get { return dateTimeFormat; }
+            set { dateTimeFormat = value; }
+        }
+
         #endregion
 
         protected override void EndProcessing()
@@ -61,7 +69,7 @@ namespace PSLogging.Commands
 
             if (ParameterSetName == "New")
             {
-                logFile = new LogFile(path, streams, errorCallback);
+                logFile = new LogFile(path, streams, errorCallback, dateTimeFormat);
                 WriteObject(logFile);
             }
             else
