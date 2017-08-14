@@ -11,7 +11,6 @@ namespace PSLogging
     {
         #region Fields
 
-        //private string DateTimeFormat = "dd-MMM-yyyy - HH:mm:ss";
         private readonly string fileName;
         private readonly string path;
 
@@ -71,7 +70,7 @@ namespace PSLogging
                 CheckDirectory();
                 if (message != String.Empty)
                 {
-                    message = String.Format("{0,-18} - [D] {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
+                    message = String.Format("{0,-29} - [D] {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
                 }
 
                 File.AppendAllText(System.IO.Path.Combine(path, fileName), message);
@@ -98,7 +97,7 @@ namespace PSLogging
                 CheckDirectory();
                 if (message.Trim() != String.Empty)
                 {
-                    message = String.Format("{0,-18} - [E] {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
+                    message = String.Format("{0,-29} - [E] {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
                 }
 
                 File.AppendAllText(System.IO.Path.Combine(path, fileName), message);
@@ -125,7 +124,7 @@ namespace PSLogging
                 CheckDirectory();
                 if (message.Trim() != String.Empty)
                 {
-                    message = String.Format("{0,-18} - {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
+                    message = String.Format("{0,-29} - {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
                 }
 
                 File.AppendAllText(System.IO.Path.Combine(path, fileName), message);
@@ -152,7 +151,7 @@ namespace PSLogging
                 CheckDirectory();
                 if (message.Trim() != String.Empty)
                 {
-                    message = String.Format("{0,-18} - [V] {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
+                    message = String.Format("{0,-29} - [V] {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
                 }
 
                 File.AppendAllText(System.IO.Path.Combine(path, fileName), message);
@@ -179,7 +178,7 @@ namespace PSLogging
                 CheckDirectory();
                 if (message.Trim() != String.Empty)
                 {
-                    message = String.Format("{0,-18} - [W] {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
+                    message = String.Format("{0,-29} - [W] {1}", DateTime.UtcNow.ToString(DateTimeFormat), message);
                 }
 
                 File.AppendAllText(System.IO.Path.Combine(path, fileName), message);
