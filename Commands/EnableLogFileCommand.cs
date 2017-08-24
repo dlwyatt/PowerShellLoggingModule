@@ -14,7 +14,7 @@ namespace PSLogging.Commands
         private LogFile inputObject;
         private string path;
         private StreamType streams = StreamType.All;
-        private string dateTimeFormat;
+        private string dateTimeFormat = "r";
 
         #region Parameters
 
