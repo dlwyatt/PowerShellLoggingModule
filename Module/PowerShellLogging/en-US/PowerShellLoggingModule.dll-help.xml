@@ -17,7 +17,7 @@
 	<!--This is the Description section-->
 		<maml:para>This cmdlet creates a new LogFile object and attaches it to the current session&apos;s host interceptor, or attaches an existing LogFile object to the interceptor.  When creating a new LogFile, the calling script MUST maintain a reference to the LogFile object in a variable to prevent it from being garbage collected and detached from the interceptor.
 
-All host output in streams specified by the -StreamType parameter is sent to the log file in addition to the console.  Non-blank lines are prepended with the current date and time in a culture-invariant format (Get-Date -Format &apos;r&apos;).  Log file output from the Error, Warning, Verbose and Debug streams are also prepended with [E], [W], [V] and [D], respectively.</maml:para>
+All host output in streams specified by the -StreamType parameter is sent to the log file in addition to the console.  By default, non-blank lines are prepended with the current date and time in a culture-invariant format (Get-Date -Format &apos;r&apos;).  Log file output from the Error, Warning, Verbose and Debug streams are also prepended with [E], [W], [V] and [D], respectively.</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>
