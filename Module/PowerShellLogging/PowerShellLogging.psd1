@@ -12,13 +12,13 @@
 ModuleToProcess = 'PowerShellLogging.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.2.1'
+ModuleVersion = '1.3.0'
 
 # ID used to uniquely identify this module
 GUID = '345320b5-bdc3-4ab6-a13e-fcb019362fe6'
 
 CompanyName = 'Home'
-CopyRight = 'Copyright 2014 David Wyatt'
+CopyRight = 'Copyright 2017 David Wyatt'
 
 # Author of this module
 Author = 'Dave Wyatt'
