@@ -10,6 +10,8 @@ Describe "It should work when called from scripts run by PowerShell.Invoke" {
         Write-Host 'This is a host test'
         'Returned OK'
         Write-Verbose 'This is a verbose test' -Verbose
+        # Does not output, because Verbose is suppressed
+        Write-Verbose 'This is a another verbose test'
         Disable-LogFile $Logging
     }
 
@@ -54,5 +56,8 @@ Describe "It should work when called from scripts run by PowerShell.Invoke" {
         (Get-Content $Path) -match ".*This is a verbose test$" | Should -Not -BeNullOrEmpty
     }
 
+    It "Should not log verbose that's not output" -Skip:(!(Test-Path $Path)) {
+        (Get-Content $Path) -match ".*This is another verbose test$" | Should -BeNullOrEmpty
+    }
 
 }
