@@ -1,4 +1,4 @@
-﻿// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedMember.Global
 // ReSharper disable UnusedMethodReturnValue.Global
 
 namespace PSLogging
@@ -93,13 +93,25 @@ namespace PSLogging
 
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
-            object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
-            object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
-
-            FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
-
-            externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
-            externalUIField.SetValue(ui, this);
+            // When PowerShell went open source, they renamed the private variables to have _underbarPrefixes
+            if (host.Version >= new Version(6, 0))
+            {
+                object uiRef = host.GetType().GetField("_internalUIRef", flags)?.GetValue(host);
+                object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+                FieldInfo externalUIField = ui.GetType().GetField("_externalUI", flags);
+                externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
+                externalUIField.SetValue(ui, this);
+            }
+            else
+            {
+                // Try the WindowsPowerShell version:
+                object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
+                object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+                FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
+                externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
+                externalUIField.SetValue(ui, this);
+            }
+            
             this.host = host;
         }
 
@@ -109,14 +121,27 @@ namespace PSLogging
 
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
-            object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
-            object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
-
-            FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
-
-            if (externalUIField.GetValue(ui) == this)
+            // When PowerShell went open source, they renamed the private variables to have _underbarPrefixes
+            if (host.Version >= new Version(6, 0))
             {
-                externalUIField.SetValue(ui, externalUI);
+                object uiRef = host.GetType().GetField("_internalUIRef", flags)?.GetValue(host);
+                object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+                FieldInfo externalUIField = ui.GetType().GetField("_externalUI", flags);
+                if (externalUIField.GetValue(ui) == this)
+                {
+                    externalUIField.SetValue(ui, externalUI);
+                }
+            }
+            else
+            {
+                // Try the WindowsPowerShell version:
+                object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
+                object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+                FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
+                if (externalUIField.GetValue(ui) == this)
+                {
+                    externalUIField.SetValue(ui, externalUI);
+                }
             }
 
             externalUI = null;
