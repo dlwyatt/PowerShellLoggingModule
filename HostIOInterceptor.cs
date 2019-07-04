@@ -111,7 +111,7 @@ namespace PSLogging
                 externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
                 externalUIField.SetValue(ui, this);
             }
-            
+
             this.host = host;
         }
 
@@ -190,7 +190,7 @@ namespace PSLogging
             {
                 throw new InvalidOperationException("Unable to prompt user for credential in headless session");
             }
-            
+
             PSCredential result = externalUI.PromptForCredential(caption, message, userName, targetName);
 
             SendToSubscribers(s => s.CredentialPrompt(result));
@@ -328,11 +328,6 @@ namespace PSLogging
 
         public override void WriteLine()
         {
-            // if (externalUI == null)
-            // {
-            //     throw new InvalidOperationException();
-            // }
-
             string[] lines = writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
@@ -348,11 +343,6 @@ namespace PSLogging
 
         public override void WriteLine(string value)
         {
-            // if (externalUI == null)
-            // {
-            //     throw new InvalidOperationException();
-            // }
-
             string[] lines = (writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
@@ -368,11 +358,6 @@ namespace PSLogging
 
         public override void WriteLine(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-        //     if (externalUI == null)
-        //     {
-        //         throw new InvalidOperationException();
-        //     }
-
             string[] lines = (writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
