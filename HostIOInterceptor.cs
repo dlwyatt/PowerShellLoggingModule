@@ -152,7 +152,7 @@ namespace PSLogging
                                                             string message,
                                                             Collection<FieldDescription> descriptions)
         {
-            if (externalUI != null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException("Unable to prompt user in headless session");
             }
@@ -169,7 +169,7 @@ namespace PSLogging
                                             Collection<ChoiceDescription> choices,
                                             int defaultChoice)
         {
-            if (externalUI != null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException("Unable to prompt user for choice in headless session");
             }
@@ -186,7 +186,7 @@ namespace PSLogging
                                                          string userName,
                                                          string targetName)
         {
-            if (externalUI != null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException("Unable to prompt user for credential in headless session");
             }
@@ -205,7 +205,7 @@ namespace PSLogging
                                                          PSCredentialTypes allowedCredentialTypes,
                                                          PSCredentialUIOptions options)
         {
-            if (externalUI != null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException("Unable to prompt user for credential in headless session");
             }
@@ -224,7 +224,7 @@ namespace PSLogging
 
         public override string ReadLine()
         {
-            if (externalUI != null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException("Unable to ReadLine from host in headless session");
             }
@@ -238,11 +238,10 @@ namespace PSLogging
 
         public override SecureString ReadLineAsSecureString()
         {
-            if (externalUI != null)
+            if (externalUI == null)
             {
                 throw new InvalidOperationException("Unable to ReadLineAsSecureString from host in headless session");
             }
-
 
             return externalUI.ReadLineAsSecureString();
         }
