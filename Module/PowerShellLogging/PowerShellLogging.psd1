@@ -1,7 +1,7 @@
 @{
     ModuleToProcess        = 'PowerShellLogging.psm1'
     NestedModules           = @( "PowerShellLoggingModule.dll" )
-    ModuleVersion          = '1.3.0'
+    ModuleVersion          = '1.4.0'
     GUID                   = '345320b5-bdc3-4ab6-a13e-fcb019362fe6'
     CompanyName            = 'Home'
     CopyRight              = 'Copyright 2017 David Wyatt'
@@ -20,7 +20,8 @@
         PSData = @{
             LicenseUri   = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
             ProjectUri   = 'https://github.com/dlwyatt/PowerShellLoggingModule'
-            ReleaseNotes = 'Added DateTimeFormat parameter to Enable-LogFile'
+            ReleaseNotes = 'Added support for PowerShell 6 & 7
+Added support for logging from runspaces in pools (i.e. without an actual host)'
         }
     }
 }
