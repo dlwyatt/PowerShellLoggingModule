@@ -1,4 +1,4 @@
-#requires -Module @{ModuleName = "PowerShellLogging"; ModuleVersion = "1.3.0"}
+#requires -Module PowerShellLogging
 Describe "It should work when called from scripts run by PowerShell.Invoke" {
 
     $Path = "TestDrive:\log.txt"
