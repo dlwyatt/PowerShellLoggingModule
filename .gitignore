@@ -215,4 +215,5 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 
-Output/
+# The default build.ps1 output folders
+[0-9]*\.[0-9]*\.[0-9]*/

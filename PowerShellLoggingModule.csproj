@@ -13,8 +13,7 @@
       <!--<TargetFramework>net2.0</TargetFramework>-->
       <TargetFramework>netstandard2.0</TargetFramework>
     <ApplicationIcon />
-    <PackageVersion>1.4.0</PackageVersion>
-    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <VersionPrefix>1.4.0</VersionPrefix>
     <OutputType>Library</OutputType>
     <DebugType>embedded</DebugType>
     <StartupObject />

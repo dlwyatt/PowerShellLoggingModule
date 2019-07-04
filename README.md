@@ -23,12 +23,23 @@ Install-Module PowerShellLogging
 Compile your own copy
 ====================
 
-You can run `build.ps1` to assembly a copy in an `Output` folder,
-or you can just compile the assembly with:
+You can compile the assembly with:
 
 ```posh
 dotnet build -c Release
 ```
+
+To generate the full module, you can run the build script:
+
+```posh
+.\build -Version $(gitversion -showvariable nugetversion)
+```
+
+**Note:** this script builds into a version numbered folder in the module root.
+The expectation is that you have the source in a folder like `~\Projects\Modules\PowerShellLogging`
+where the parent folder can be added to your PSModulePath for testing purposes,
+so the build will end up in, e.g.: `~\Projects\Modules\PowerShellLogging\1.4.0`
+and the build script will update the metadata to make it all versioned properly!
 
 Testing
 =======

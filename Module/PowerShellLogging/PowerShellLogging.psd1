@@ -18,6 +18,7 @@
 
     PrivateData = @{
         PSData = @{
+            Prerelease   = ''
             LicenseUri   = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
             ProjectUri   = 'https://github.com/dlwyatt/PowerShellLoggingModule'
             ReleaseNotes = 'Added support for PowerShell 6 & 7
