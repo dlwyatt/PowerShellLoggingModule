@@ -1,5 +1,5 @@
 #requires -Module PowerShellLogging
-Describe "It should work when called from scripts run by PowerShell.Invoke" {
+Describe "Working in scripts run locally in the host" {
 
     $Path = "TestDrive:\log.txt"
     $Path = (Join-Path (Convert-Path (Split-Path $Path)) (Split-Path $Path -Leaf))

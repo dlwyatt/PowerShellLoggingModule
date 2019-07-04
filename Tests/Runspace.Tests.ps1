@@ -1,5 +1,5 @@
 #requires -Module PowerShellLogging
-Describe "It should work when called from scripts run by PowerShell.Invoke" {
+Describe "Working when called in a parallel runspace" {
 
     $Path = "TestDrive:\log.txt"
     $Path = (Join-Path (Convert-Path (Split-Path $Path)) (Split-Path $Path -Leaf))
