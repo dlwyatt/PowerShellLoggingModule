@@ -39,7 +39,7 @@ namespace PSLogging
         #endregion
 
         #region Properties
-        
+
         public bool Paused
         {
             get { return paused; }
@@ -93,13 +93,25 @@ namespace PSLogging
 
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
-            object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
-            object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+            // When PowerShell went open source, they renamed the private variables to have _underbarPrefixes
+            if (host.Version >= new Version(6, 0))
+            {
+                object uiRef = host.GetType().GetField("_internalUIRef", flags)?.GetValue(host);
+                object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+                FieldInfo externalUIField = ui.GetType().GetField("_externalUI", flags);
+                externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
+                externalUIField.SetValue(ui, this);
+            }
+            else
+            {
+                // Try the WindowsPowerShell version:
+                object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
+                object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+                FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
+                externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
+                externalUIField.SetValue(ui, this);
+            }
 
-            FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
-
-            externalUI = (PSHostUserInterface)externalUIField.GetValue(ui);
-            externalUIField.SetValue(ui, this);
             this.host = host;
         }
 
@@ -109,14 +121,27 @@ namespace PSLogging
 
             const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
-            object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
-            object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
-
-            FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
-
-            if (externalUIField.GetValue(ui) == this)
+            // When PowerShell went open source, they renamed the private variables to have _underbarPrefixes
+            if (host.Version >= new Version(6, 0))
             {
-                externalUIField.SetValue(ui, externalUI);
+                object uiRef = host.GetType().GetField("_internalUIRef", flags)?.GetValue(host);
+                object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+                FieldInfo externalUIField = ui.GetType().GetField("_externalUI", flags);
+                if (externalUIField.GetValue(ui) == this)
+                {
+                    externalUIField.SetValue(ui, externalUI);
+                }
+            }
+            else
+            {
+                // Try the WindowsPowerShell version:
+                object uiRef = host.GetType().GetField("internalUIRef", flags).GetValue(host);
+                object ui = uiRef.GetType().GetProperty("Value", flags).GetValue(uiRef, null);
+                FieldInfo externalUIField = ui.GetType().GetField("externalUI", flags);
+                if (externalUIField.GetValue(ui) == this)
+                {
+                    externalUIField.SetValue(ui, externalUI);
+                }
             }
 
             externalUI = null;
@@ -129,7 +154,7 @@ namespace PSLogging
         {
             if (externalUI == null)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Unable to prompt user in headless session");
             }
 
             Dictionary<string, PSObject> result = externalUI.Prompt(caption, message, descriptions);
@@ -146,7 +171,7 @@ namespace PSLogging
         {
             if (externalUI == null)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Unable to prompt user for choice in headless session");
             }
 
             int result = externalUI.PromptForChoice(caption, message, choices, defaultChoice);
@@ -163,7 +188,7 @@ namespace PSLogging
         {
             if (externalUI == null)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Unable to prompt user for credential in headless session");
             }
 
             PSCredential result = externalUI.PromptForCredential(caption, message, userName, targetName);
@@ -182,7 +207,7 @@ namespace PSLogging
         {
             if (externalUI == null)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Unable to prompt user for credential in headless session");
             }
 
             PSCredential result = externalUI.PromptForCredential(caption,
@@ -201,7 +226,7 @@ namespace PSLogging
         {
             if (externalUI == null)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Unable to ReadLine from host in headless session");
             }
 
             string result = externalUI.ReadLine();
@@ -215,7 +240,7 @@ namespace PSLogging
         {
             if (externalUI == null)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Unable to ReadLineAsSecureString from host in headless session");
             }
 
             return externalUI.ReadLineAsSecureString();
@@ -246,12 +271,10 @@ namespace PSLogging
 
         public override void Write(string value)
         {
-            if (externalUI == null)
+            if (externalUI != null)
             {
-                throw new InvalidOperationException();
+                externalUI.Write(value);
             }
-
-            externalUI.Write(value);
 
             if (!paused)
             {
@@ -261,12 +284,10 @@ namespace PSLogging
 
         public override void Write(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (externalUI == null)
+            if (externalUI != null)
             {
-                throw new InvalidOperationException();
+                externalUI.Write(foregroundColor, backgroundColor, value);
             }
-
-            externalUI.Write(foregroundColor, backgroundColor, value);
 
             if (!paused)
             {
@@ -276,11 +297,6 @@ namespace PSLogging
 
         public override void WriteDebugLine(string message)
         {
-            if (externalUI == null)
-            {
-                throw new InvalidOperationException();
-            }
-
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
@@ -288,16 +304,14 @@ namespace PSLogging
                 SendToSubscribers(s => s.WriteDebug(temp.TrimEnd() + "\r\n"));
             }
 
-            externalUI.WriteDebugLine(message);
+            if (externalUI != null)
+            {
+                externalUI.WriteDebugLine(message);
+            }
         }
 
         public override void WriteErrorLine(string message)
         {
-            if (externalUI == null)
-            {
-                throw new InvalidOperationException();
-            }
-
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
@@ -305,16 +319,14 @@ namespace PSLogging
                 SendToSubscribers(s => s.WriteError(temp.TrimEnd() + "\r\n"));
             }
 
-            externalUI.WriteErrorLine(message);
+            if (externalUI != null)
+            {
+                externalUI.WriteErrorLine(message);
+            }
         }
 
         public override void WriteLine()
         {
-            if (externalUI == null)
-            {
-                throw new InvalidOperationException();
-            }
-
             string[] lines = writeCache.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
@@ -323,16 +335,13 @@ namespace PSLogging
             }
 
             writeCache.Length = 0;
-            externalUI.WriteLine();
+            if (externalUI != null) {
+                externalUI.WriteLine();
+            }
         }
 
         public override void WriteLine(string value)
         {
-            if (externalUI == null)
-            {
-                throw new InvalidOperationException();
-            }
-
             string[] lines = (writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
@@ -341,16 +350,13 @@ namespace PSLogging
             }
 
             writeCache.Length = 0;
-            externalUI.WriteLine(value);
+            if (externalUI != null) {
+                externalUI.WriteLine(value);
+            }
         }
 
         public override void WriteLine(ConsoleColor foregroundColor, ConsoleColor backgroundColor, string value)
         {
-            if (externalUI == null)
-            {
-                throw new InvalidOperationException();
-            }
-
             string[] lines = (writeCache + value).Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
@@ -359,28 +365,23 @@ namespace PSLogging
             }
 
             writeCache.Length = 0;
-            externalUI.WriteLine(foregroundColor, backgroundColor, value);
+            if (externalUI != null){
+                externalUI.WriteLine(foregroundColor, backgroundColor, value);
+            }
         }
 
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
-            if (externalUI == null)
-            {
-                throw new InvalidOperationException();
-            }
-
             SendToSubscribers(s => s.WriteProgress(sourceId, record));
 
-            externalUI.WriteProgress(sourceId, record);
+            if (externalUI != null)
+            {
+                externalUI.WriteProgress(sourceId, record);
+            }
         }
 
         public override void WriteVerboseLine(string message)
         {
-            if (externalUI == null)
-            {
-                throw new InvalidOperationException();
-            }
-
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
@@ -388,16 +389,14 @@ namespace PSLogging
                 SendToSubscribers(s => s.WriteVerbose(temp.TrimEnd() + "\r\n"));
             }
 
-            externalUI.WriteVerboseLine(message);
+            if (externalUI != null)
+            {
+                externalUI.WriteVerboseLine(message);
+            }
         }
 
         public override void WriteWarningLine(string message)
         {
-            if (externalUI == null)
-            {
-                throw new InvalidOperationException();
-            }
-
             string[] lines = message.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
             foreach (string line in lines)
             {
@@ -405,7 +404,10 @@ namespace PSLogging
                 SendToSubscribers(s => s.WriteWarning(temp.TrimEnd() + "\r\n"));
             }
 
-            externalUI.WriteWarningLine(message);
+            if (externalUI != null)
+            {
+                externalUI.WriteWarningLine(message);
+            }
         }
 
         #endregion
