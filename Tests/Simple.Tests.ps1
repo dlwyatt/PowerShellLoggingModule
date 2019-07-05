@@ -5,18 +5,20 @@ Describe "Working in scripts run locally in the host" {
     $Path = (Join-Path (Convert-Path (Split-Path $Path)) (Split-Path $Path -Leaf))
 
     $TestScript = {
+        [CmdletBinding()]param()
+
         Import-Module PowerShellLogging
         $Logging = Enable-LogFile -Path $Path
         Write-Host 'This is a host test'
         'Returned OK'
-        Write-Verbose 'This is a verbose test' -Verbose
-        # Does not output, because Verbose is suppressed
+        Write-Verbose 'This is a verbose test' -verbose
         Write-Verbose 'This is a another verbose test'
         Disable-LogFile $Logging
     }
 
     It "Should not crash when used" {
-        $script:Result = & $TestScript
+        $script:Result = & $TestScript -ErrorVariable Ev
+        $script:Ev = $Ev
     }
 
     It "Should not interfere with output" {
@@ -24,23 +26,23 @@ Describe "Working in scripts run locally in the host" {
     }
 
     It "Should not cause Enable-LogFile to fail" {
-        $script:PowerShell.Streams.Error.InvocationInfo.MyCommand.Name | Should -Not -Contain "Enable-LogFile"
+        $script:Ev.InvocationInfo.MyCommand.Name | Should -Not -Contain "Enable-LogFile"
     }
 
     It "Should not cause Write-Host to fail" {
-        $script:PowerShell.Streams.Error.InvocationInfo.MyCommand.Name | Should -Not -Contain "Write-Host"
+        $script:Ev.InvocationInfo.MyCommand.Name | Should -Not -Contain "Write-Host"
     }
 
     It "Should not cause Write-Verbose to fail" {
-        $script:PowerShell.Streams.Error.InvocationInfo.MyCommand.Name | Should -Not -Contain "Write-Verbose"
+        $script:Ev.InvocationInfo.MyCommand.Name | Should -Not -Contain "Write-Verbose"
     }
 
     It "Should not cause Disable-LogFile to fail" {
-        $script:PowerShell.Streams.Error.InvocationInfo.MyCommand.Name | Should -Not -Contain "Disable-LogFile"
+        $script:Ev.InvocationInfo.MyCommand.Name | Should -Not -Contain "Disable-LogFile"
     }
 
     It "Should not cause any errors" {
-        $script:PowerShell.Streams.Error.Count | Should -Be 0
+        $script:Ev.Count | Should -Be 0
     }
 
     It "Should create the log file" {
