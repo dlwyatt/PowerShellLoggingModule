@@ -12,6 +12,7 @@ Describe "Working when called in a parallel runspace" {
 
     AfterAll {
         if ($script:PowerShell) {
+            $script:PowerShell.Runspace.Dispose()
             $script:PowerShell.Dispose()
         }
     }
@@ -23,6 +24,7 @@ Describe "Working when called in a parallel runspace" {
         'Returned OK'
         Write-Verbose 'This is a verbose test' -Verbose
         Disable-LogFile `$Logging
+        Remove-Module PowerShellLogging
     "
 
     It "Should not crash when used" {

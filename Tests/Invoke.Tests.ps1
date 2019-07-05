@@ -21,6 +21,7 @@ Describe "Working when called inside PowerShell.Invoke" {
         'Returned OK'
         Write-Verbose 'This is a verbose test' -Verbose
         Disable-LogFile `$Logging
+        Remove-Module PowerShellLogging
     "
 
     It "Should not crash when used" {
@@ -48,6 +49,7 @@ Describe "Working when called inside PowerShell.Invoke" {
     }
 
     It "Should not cause any errors" {
+        $script:PowerShell.Streams.Error
         $script:PowerShell.Streams.Error.Count | Should -Be 0
     }
 

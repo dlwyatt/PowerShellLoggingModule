@@ -15,6 +15,7 @@ Describe "Working when called in a remote runspace" -Tag "Remoting" {
 
     AfterAll {
         if ($script:PowerShell) {
+            $script:PowerShell.Runspace.Dispose()
             $script:PowerShell.Dispose()
         }
     }
