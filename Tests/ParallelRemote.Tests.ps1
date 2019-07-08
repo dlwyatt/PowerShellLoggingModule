@@ -1,7 +1,7 @@
 #requires -Module PowerShellLogging, ThreadJob
 param($Count = 4)
 
-Describe "Working when called in a remote runspace" -Tag "Remoting" {
+Describe "Working when called in parallel in remote runspaces" -Tag "Remoting" {
 
     $Path = "TestDrive:\log{0}.txt"
     $Path = (Join-Path (Convert-Path (Split-Path $Path)) (Split-Path $Path -Leaf))

@@ -1,5 +1,5 @@
 #requires -Module PowerShellLogging
-Describe "Working when called inside PowerShell.Invoke" {
+Describe "Working when called inside PowerShell.Invoke (as long as we Remove-Module)" {
 
     $Path = "TestDrive:\log.txt"
     $Path = (Join-Path (Convert-Path (Split-Path $Path)) (Split-Path $Path -Leaf))

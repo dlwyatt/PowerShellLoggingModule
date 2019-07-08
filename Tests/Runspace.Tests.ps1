@@ -1,5 +1,5 @@
 #requires -Module PowerShellLogging
-Describe "Working when called in a parallel runspace" {
+Describe "Working when called synchronously in a parallel runspace (as long as we Remove-Module)" {
 
     $Path = "TestDrive:\log.txt"
     $Path = (Join-Path (Convert-Path (Split-Path $Path)) (Split-Path $Path -Leaf))

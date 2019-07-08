@@ -1,5 +1,5 @@
 #requires -Module PowerShellLogging
-Describe "Working in scripts run locally in the host" {
+Describe "Working in scripts run locally in the host (as long as we Remove-Module)" {
 
     $Path = "TestDrive:\log.txt"
     $Path = (Join-Path (Convert-Path (Split-Path $Path)) (Split-Path $Path -Leaf))
@@ -14,6 +14,7 @@ Describe "Working in scripts run locally in the host" {
         Write-Verbose 'This is a verbose test' -verbose
         Write-Verbose 'This is a another verbose test'
         Disable-LogFile $Logging
+        Remove-Module PowerShellLogging
     }
 
     It "Should not crash when used" {
